@@ -29,6 +29,10 @@ from transformers import AutoProcessor
 from gate import EarlyLayerGate, select_by_gate, select_uniform, select_by_pixel_diff
 from data import load_annotations, read_window, read_audio_window
 
+# Omni's documented default system prompt; the model behaves more reliably with it
+OMNI_SYSTEM = ("You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of "
+               "perceiving auditory and visual inputs, as well as generating text and speech.")
+
 PROMPT = ("You are watching a live phone camera stream. The frames shown end at the current moment.\n"
           "{audio_note}"
           "Frame timestamps (seconds): {ts}\n"
@@ -83,8 +87,16 @@ def answer(model, proc, frames, question, timestamps=None, audio=None, omni=Fals
         content.append({"type": "audio"})
     content.append({"type": "text", "text": PROMPT.format(q=question, ts=ts_str, audio_note=audio_note)})
     msgs = [{"role": "user", "content": content}]
+    if omni:
+        msgs.insert(0, {"role": "system", "content": [{"type": "text", "text": OMNI_SYSTEM}]})
     text = proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
-    proc_kwargs, gen_kwargs = {}, {}
+    # Stop at the end of the assistant's turn. Without this, the Omni Thinker keeps writing
+    # invented "Human: ..." turns until max_new_tokens.
+    tok = proc.tokenizer
+    stop_ids = sorted({i for i in (tok.convert_tokens_to_ids("<|im_end|>"), tok.eos_token_id)
+                       if isinstance(i, int) and i >= 0 and i != tok.unk_token_id})
+    proc_kwargs = {}
+    gen_kwargs = {"eos_token_id": stop_ids, "pad_token_id": tok.pad_token_id if tok.pad_token_id is not None else stop_ids[0]}
     if audio is not None:
         proc_kwargs["audio"] = [audio]
     if omni:
@@ -96,8 +108,9 @@ def answer(model, proc, frames, question, timestamps=None, audio=None, omni=Fals
     torch.cuda.synchronize(); t0 = time.perf_counter()
     out = model.generate(**inp, max_new_tokens=max_new, do_sample=False, **gen_kwargs)
     torch.cuda.synchronize(); dt = time.perf_counter() - t0
-    ans = proc.batch_decode(out[:, inp.input_ids.shape[1]:], skip_special_tokens=True)[0].strip()
-    return ans, dt, int(inp.input_ids.shape[1])
+    new_ids = out[:, inp.input_ids.shape[1]:]
+    ans = proc.batch_decode(new_ids, skip_special_tokens=True)[0].strip()
+    return ans, dt, int(inp.input_ids.shape[1]), int(new_ids.shape[1])
 
 
 def main():
@@ -219,7 +232,7 @@ def main():
         for name, idx in conds.items():
             if (qid, name) in done_conds:
                 continue
-            pred, lat, ntok = answer(model, proc, [frames[i] for i in idx], r["question"],
+            pred, lat, ntok, ngen = answer(model, proc, [frames[i] for i in idx], r["question"],
                                      timestamps=[frame_ts[i] for i in idx], audio=audio, omni=omni)
             m = len(idx)
             if name.startswith("gate"):
@@ -233,7 +246,7 @@ def main():
 
             record = {**base, "cond": name, "kept": idx, "n_kept": m,
                       "vit_ms": vit_ms_ideal, "vit_ms_actual": vit_ms_actual,
-                      "llm_latency_s": lat, "prompt_tokens": ntok, "pred": pred}
+                      "llm_latency_s": lat, "prompt_tokens": ntok, "gen_tokens": ngen, "pred": pred}
             fout.write(json.dumps(record, ensure_ascii=False) + "\n")
             fout.flush()
             done_conds.add((qid, name))
