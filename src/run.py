@@ -29,14 +29,13 @@ from transformers import AutoProcessor
 from gate import EarlyLayerGate, select_by_gate, select_uniform, select_by_pixel_diff
 from data import load_annotations, read_window, read_audio_window
 
-# Omni's documented default system prompt; the model behaves more reliably with it
-OMNI_SYSTEM = ("You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of "
-               "perceiving auditory and visual inputs, as well as generating text and speech.")
-
 PROMPT = ("You are watching a live phone camera stream. The frames shown end at the current moment.\n"
           "{audio_note}"
           "Frame timestamps (seconds): {ts}\n"
-          "Answer the user's question concisely based only on what you have seen.\nQuestion: {q}")
+          "Answer the user's question directly and concisely, based only on what you have {perceived}. "
+          "Do not ask follow-up questions.\nQuestion: {q}")
+# No system prompt on purpose: Omni's default "virtual human" system prompt is only needed for
+# speech output, and in the iteration 3 smoke test it made answers hedging and chatty.
 
 
 def resolve_video(root, v):
@@ -85,10 +84,9 @@ def answer(model, proc, frames, question, timestamps=None, audio=None, omni=Fals
     content = [{"type": "video"}]
     if audio is not None:
         content.append({"type": "audio"})
-    content.append({"type": "text", "text": PROMPT.format(q=question, ts=ts_str, audio_note=audio_note)})
+    content.append({"type": "text", "text": PROMPT.format(q=question, ts=ts_str, audio_note=audio_note,
+                                                      perceived="seen and heard" if audio is not None else "seen")})
     msgs = [{"role": "user", "content": content}]
-    if omni:
-        msgs.insert(0, {"role": "system", "content": [{"type": "text", "text": OMNI_SYSTEM}]})
     text = proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
     # Stop at the end of the assistant's turn. Without this, the Omni Thinker keeps writing
     # invented "Human: ..." turns until max_new_tokens.
