@@ -1,0 +1,13 @@
+gate,baseline,diff,ci_low,ci_high,n,significant
+gate@0.88,uniform@0.88,0.07,-6.25,7.5,76,False
+gate@0.88,pixel@0.88,3.28,0.07,8.94,76,True
+gate@0.88,full,2.47,-8.71,13.76,76,False
+gate@0.9,uniform@0.9,0.61,-4.47,7.63,76,False
+gate@0.9,pixel@0.9,0.73,-3.03,3.91,76,False
+gate@0.9,full,0.88,-11.15,13.52,76,False
+gate@0.93,uniform@0.93,1.44,-4.46,9.11,76,False
+gate@0.93,pixel@0.93,-0.0,-0.02,0.02,76,False
+gate@0.93,full,0.12,-13.0,12.03,76,False
+gate@0.95,uniform@0.95,-1.57,-9.19,7.27,76,False
+gate@0.95,pixel@0.95,3.78,-0.03,10.2,76,False
+gate@0.95,full,0.76,-9.88,12.15,76,False

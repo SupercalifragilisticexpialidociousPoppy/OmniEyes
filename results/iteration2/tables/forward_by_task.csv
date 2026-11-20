@@ -1,0 +1,14 @@
+condition,task,n,score
+full,forward,74,-38.17
+gate@0.88,forward,74,-26.69
+gate@0.9,forward,74,-30.21
+gate@0.93,forward,74,-32.41
+gate@0.95,forward,74,-28.43
+pixel@0.88,forward,74,-27.52
+pixel@0.9,forward,74,-30.2
+pixel@0.93,forward,74,-33.3
+pixel@0.95,forward,74,-25.41
+uniform@0.88,forward,74,-26.33
+uniform@0.9,forward,74,-26.18
+uniform@0.93,forward,74,-31.46
+uniform@0.95,forward,74,-38.32

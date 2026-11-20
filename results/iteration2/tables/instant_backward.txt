@@ -1,0 +1,334 @@
+Metric: ent_con (x100)   Tasks: instant, backward
+condition             n   score  frames   ViT ms  ViT %ideal  ViT %act  tokens  LLM s
+full                 76   -44.2    31.6     2133        100%      100%    2758   2.17
+gate@0.88            76   -41.8     2.8      474         22%       25%     356   0.86
+pixel@0.88           76   -45.0     2.8      187          9%        9%     356   0.87
+uniform@0.88         76   -41.8     2.8      187          9%        9%     356   0.87
+gate@0.9             76   -43.3     3.2      498         23%       26%     393   0.90
+pixel@0.9            76   -44.1     3.2      220         10%       10%     393   0.88
+uniform@0.9          76   -44.0     3.2      220         10%       10%     393   0.89
+gate@0.93            76   -44.1     4.6      566         27%       30%     505   0.94
+pixel@0.93           76   -44.1     4.6      312         15%       15%     505   0.94
+uniform@0.93         76   -45.6     4.6      312         15%       15%     505   0.95
+gate@0.95            76   -43.5     6.1      639         30%       35%     624   0.99
+pixel@0.95           76   -47.2     6.1      410         19%       19%     624   1.01
+uniform@0.95         76   -41.9     6.1      410         19%       19%     624   1.00
+
+Score by task (excluding parse failures):
+  full              backward=-33.3(n=28)  instant=-50.6(n=48)
+  gate@0.88         backward=-25.2(n=28)  instant=-51.4(n=48)
+  gate@0.9          backward=-28.6(n=28)  instant=-52.0(n=48)
+  gate@0.93         backward=-31.1(n=28)  instant=-51.7(n=48)
+  gate@0.95         backward=-31.0(n=28)  instant=-50.7(n=48)
+  pixel@0.88        backward=-32.4(n=28)  instant=-52.4(n=48)
+  pixel@0.9         backward=-28.9(n=28)  instant=-52.9(n=48)
+  pixel@0.93        backward=-31.1(n=28)  instant=-51.7(n=48)
+  pixel@0.95        backward=-41.2(n=28)  instant=-50.8(n=48)
+  uniform@0.88      backward=-19.4(n=28)  instant=-54.9(n=48)
+  uniform@0.9       backward=-24.4(n=28)  instant=-55.4(n=48)
+  uniform@0.93      backward=-31.8(n=28)  instant=-53.6(n=48)
+  uniform@0.95      backward=-21.6(n=28)  instant=-53.7(n=48)
+
+Paired diff (gate - baseline), 95% bootstrap CI   (* = CI excludes 0):
+  gate@0.88          vs uniform@0.88         +0.1 [  -6.2,   +7.5] n=76    
+  gate@0.88          vs pixel@0.88           +3.3 [  +0.1,   +8.9] n=76   *
+  gate@0.88          vs full                 +2.5 [  -8.7,  +13.8] n=76    
+  gate@0.9           vs uniform@0.9          +0.6 [  -4.5,   +7.6] n=76    
+  gate@0.9           vs pixel@0.9            +0.7 [  -3.0,   +3.9] n=76    
+  gate@0.9           vs full                 +0.9 [ -11.2,  +13.5] n=76    
+  gate@0.93          vs uniform@0.93         +1.4 [  -4.5,   +9.1] n=76    
+  gate@0.93          vs pixel@0.93           -0.0 [  -0.0,   +0.0] n=76    
+  gate@0.93          vs full                 +0.1 [ -13.0,  +12.0] n=76    
+  gate@0.95          vs uniform@0.95         -1.6 [  -9.2,   +7.3] n=76    
+  gate@0.95          vs pixel@0.95           +3.8 [  -0.0,  +10.2] n=76    
+  gate@0.95          vs full                 +0.8 [  -9.9,  +12.1] n=76    
+
+=== ERROR ANALYSIS: 10 WORST DROPS VS FULL ===
+
+--- Condition gate@0.88 vs full (showing largest drops) ---
+  Delta: -143.7 (Gate: -53.9 | Full: 89.9) [Task: instant]
+  Question: What deeper political conspiracy does his inner voice link to the affair?
+  Ref:      He links the affair to a treasonous plot where the Shi family plans to rebel. His thoughts reveal that Shi Jingtang isn't just stealing his wife but is using the marriage to seize military power and eventually cede northern territories to the Hu tribe in exchange for support. This escalates the issue from a domestic affair to high treason.
+  Full:     The inner voice in the video links the affair to a deeper political conspiracy.
+  Gate:     I'm sorry, but I can't answer that.
+  Frames:   1/33 kept: [0]
+
+  Delta: -108.3 (Gate: -97.1 | Full: 11.2) [Task: backward]
+  Question: While walking on the flat deck of the overpass, why does she choose to walk beside the tactile paving rather than directly on it?
+  Ref:      She finds the tactile strips uncomfortable to walk on. She explains that constantly stepping on the raised speed-bump-like texture is physically tiring, so she prefers walking on the smooth pavement alongside the strips.
+  Full:     She chooses to walk beside the tactile paving because it provides a softer surface, which can be more comfortable and less likely to cause injury compared to walking directly on the pavement.
+  Gate:     She chooses to walk beside the tactile paving because it provides tactile feedback, which can help her navigate the uneven surface safely and comfortably.
+  Frames:   2/33 kept: [0, 2]
+
+  Delta: -99.5 (Gate: -99.9 | Full: -0.5) [Task: instant]
+  Question: Describe the visual appearance of the instructor and the setting in this "Morning Yoga" video.
+  Ref:      The instructor is a woman wearing a pink long-sleeved top and matching leggings. She is practicing on a blue yoga mat in a room with white tiled floors and a picture hanging on the back wall.
+  Full:     The instructor is wearing glasses and is standing in front of a white wall.
+  Gate:     The instructor is wearing a white shirt and is standing in front of a white wall.
+  Frames:   5/33 kept: [0, 1, 23, 29, 30]
+
+  Delta: -99.1 (Gate: -98.6 | Full: 0.6) [Task: backward]
+  Question: Combining all the features shown, what is the overarching goal the presenter is trying to achieve with the Mail app?
+  Ref:      The goal is to streamline productivity and reduce clutter. By using VIPs to filter important people, Smart Mailboxes to filter types of mail, and tools like PDF markup and Shortcuts to speed up tasks, the aim is to make the default Mail app more efficient and less overwhelming.
+  Full:     The presenter is demonstrating how to use the Mail app to send and receive messages, including the ability to compose and send messages, as well as the ability to view and reply to messages.
+  Gate:     The presenter is demonstrating the Mail app's features, including the ability to send and receive emails, as well as the integration with other apps like Maps and Calendar. The overarching goal is to showcase the versatility and functionality of the Mail app.
+  Frames:   2/33 kept: [0, 12]
+
+  Delta: -97.1 (Gate: -97.1 | Full: 0.0) [Task: backward]
+  Question: How does the camera person's method of navigation change while interacting with the man who helps her find the '3rd Universe' shop?
+  Ref:      The camera person explicitly asks the man, "Can I hold you?" (in Chinese: "Wo la yi xia ni"), to which he agrees. Following this audio confirmation, the camera moves smoothly in close proximity to the man, indicating she is physically holding onto him to be guided through the crowd, rather than navigating solely with the cane.
+  Full:     The camera person's method of navigation changes by using the phone camera to interact with the man who helps her find the '3rd Universe' shop.
+  Gate:     The camera person's method of navigation changes by using the on-screen keyboard to type in the name of the shop.
+  Frames:   1/33 kept: [0]
+
+  Delta: -88.8 (Gate: -100.0 | Full: -11.2) [Task: backward]
+  Question: What specific future knowledge in his thoughts causes her expression to turn from anger to shock?
+  Ref:      His thought that her empire will be destroyed and her lineage extinguished soon. While he internally laments that such a beauty will soon face 'national ruin and genocide', her eyes widen in genuine shock. This specific prophecy of doom distracts her from his earlier lewdness, as it concerns the fate of her kingdom.
+  Full:     The user's expression turns from anger to shock because they are witnessing a document being scanned on the tablet.
+  Gate:     There is no existence of any future knowledge or expression of anger or shock in the given information.
+  Frames:   12/33 kept: [0, 12, 14, 15, 16, 17, 18, 22, 23, 24, 25, 27]
+
+  Delta: -85.2 (Gate: -91.7 | Full: -6.5) [Task: backward]
+  Question: In the 4x100m relay race, what significant contribution does the girl make to her team's performance?
+  Ref:      The girl is the first runner for her team (in red). She has an explosive start and runs very fast, leaving the other runners far behind. By the time she passes the baton, she has already created a significant lead for her team.
+  Full:     The girl in the 4x100m relay race makes a significant contribution by running the last 100 meters of the race.
+  Gate:     The girl in the 4x100m relay race makes a significant contribution by running the last leg of the race.
+  Frames:   3/33 kept: [0, 5, 13]
+
+  Delta: -19.5 (Gate: -99.6 | Full: -80.0) [Task: instant]
+  Question: When the smartphone rings at the beginning of the demonstration, what specific physical action does the presenter perform to silence it?
+  Ref:      The video clearly shows the presenter picking up the ringing smartphone and flipping it completely over to place it face down on the table, which immediately silences the ringtone.
+  Full:     The presenter in the video uses his right hand to press the side button of the smartphone to silence it.
+  Gate:     The presenter in the video uses the phone's mute button to silence the smartphone at the beginning of the demonstration.
+  Frames:   3/33 kept: [0, 21, 29]
+
+  Delta: -12.0 (Gate: -99.2 | Full: -87.2) [Task: backward]
+  Question: During the flight phase, what action does the player perform on the interface before jumping?
+  Ref:      While the plane is flying over the island, the player opens the map interface and places a marker on it.
+  Full:     Before jumping, the player selects a folder on the interface.
+  Gate:     The player selects a recipe from the interface before jumping.
+  Frames:   4/33 kept: [0, 6, 18, 26]
+
+  Delta: -4.1 (Gate: 95.7 | Full: 99.8) [Task: backward]
+  Question: Why did the note automatically appear in the "New Car" folder he just created?
+  Ref:      Because the folder is a "Smart Folder" with a specific rule. He set the rule to include any notes containing the tag "#new_car," so the note he previously created with that tag was automatically filtered into this folder.
+  Full:     The note automatically appeared in the "New Car" folder because it was tagged with the "New Car" tag.
+  Gate:     The note automatically appeared in the "New Car" folder because it was tagged with the "Car" tag.
+  Frames:   4/33 kept: [0, 3, 22, 26]
+
+
+--- Condition gate@0.9 vs full (showing largest drops) ---
+  Delta: -199.6 (Gate: -99.8 | Full: 99.8) [Task: backward]
+  Question: Why did the note automatically appear in the "New Car" folder he just created?
+  Ref:      Because the folder is a "Smart Folder" with a specific rule. He set the rule to include any notes containing the tag "#new_car," so the note he previously created with that tag was automatically filtered into this folder.
+  Full:     The note automatically appeared in the "New Car" folder because it was tagged with the "New Car" tag.
+  Gate:     The note automatically appeared in the "New Car" folder because it was tagged with the "Car research" label.
+  Frames:   6/33 kept: [0, 3, 22, 26, 27, 31]
+
+  Delta: -143.7 (Gate: -53.9 | Full: 89.9) [Task: instant]
+  Question: What deeper political conspiracy does his inner voice link to the affair?
+  Ref:      He links the affair to a treasonous plot where the Shi family plans to rebel. His thoughts reveal that Shi Jingtang isn't just stealing his wife but is using the marriage to seize military power and eventually cede northern territories to the Hu tribe in exchange for support. This escalates the issue from a domestic affair to high treason.
+  Full:     The inner voice in the video links the affair to a deeper political conspiracy.
+  Gate:     I'm sorry, but I can't answer that.
+  Frames:   1/33 kept: [0]
+
+  Delta: -108.3 (Gate: -97.1 | Full: 11.2) [Task: backward]
+  Question: While walking on the flat deck of the overpass, why does she choose to walk beside the tactile paving rather than directly on it?
+  Ref:      She finds the tactile strips uncomfortable to walk on. She explains that constantly stepping on the raised speed-bump-like texture is physically tiring, so she prefers walking on the smooth pavement alongside the strips.
+  Full:     She chooses to walk beside the tactile paving because it provides a softer surface, which can be more comfortable and less likely to cause injury compared to walking directly on the pavement.
+  Gate:     She chooses to walk beside the tactile paving because it provides tactile feedback, which can help her navigate the uneven surface safely and comfortably.
+  Frames:   2/33 kept: [0, 2]
+
+  Delta: -99.5 (Gate: -99.9 | Full: -0.5) [Task: instant]
+  Question: Describe the visual appearance of the instructor and the setting in this "Morning Yoga" video.
+  Ref:      The instructor is a woman wearing a pink long-sleeved top and matching leggings. She is practicing on a blue yoga mat in a room with white tiled floors and a picture hanging on the back wall.
+  Full:     The instructor is wearing glasses and is standing in front of a white wall.
+  Gate:     The instructor is wearing a white shirt and is standing in front of a white wall.
+  Frames:   6/33 kept: [0, 1, 22, 26, 29, 30]
+
+  Delta: -99.1 (Gate: -98.6 | Full: 0.6) [Task: backward]
+  Question: Combining all the features shown, what is the overarching goal the presenter is trying to achieve with the Mail app?
+  Ref:      The goal is to streamline productivity and reduce clutter. By using VIPs to filter important people, Smart Mailboxes to filter types of mail, and tools like PDF markup and Shortcuts to speed up tasks, the aim is to make the default Mail app more efficient and less overwhelming.
+  Full:     The presenter is demonstrating how to use the Mail app to send and receive messages, including the ability to compose and send messages, as well as the ability to view and reply to messages.
+  Gate:     The presenter is demonstrating the Mail app's features, including the ability to send and receive emails, as well as the integration with other apps like Maps and Calendar. The overarching goal is to showcase the versatility and functionality of the Mail app.
+  Frames:   2/33 kept: [0, 12]
+
+  Delta: -97.1 (Gate: -97.1 | Full: 0.0) [Task: backward]
+  Question: How does the camera person's method of navigation change while interacting with the man who helps her find the '3rd Universe' shop?
+  Ref:      The camera person explicitly asks the man, "Can I hold you?" (in Chinese: "Wo la yi xia ni"), to which he agrees. Following this audio confirmation, the camera moves smoothly in close proximity to the man, indicating she is physically holding onto him to be guided through the crowd, rather than navigating solely with the cane.
+  Full:     The camera person's method of navigation changes by using the phone camera to interact with the man who helps her find the '3rd Universe' shop.
+  Gate:     The camera person's method of navigation changes by using the on-screen keyboard to type in the name of the shop.
+  Frames:   1/33 kept: [0]
+
+  Delta: -88.8 (Gate: -100.0 | Full: -11.2) [Task: backward]
+  Question: What specific future knowledge in his thoughts causes her expression to turn from anger to shock?
+  Ref:      His thought that her empire will be destroyed and her lineage extinguished soon. While he internally laments that such a beauty will soon face 'national ruin and genocide', her eyes widen in genuine shock. This specific prophecy of doom distracts her from his earlier lewdness, as it concerns the fate of her kingdom.
+  Full:     The user's expression turns from anger to shock because they are witnessing a document being scanned on the tablet.
+  Gate:     There is no existence of any future knowledge or expression of anger or shock in the given information.
+  Frames:   14/33 kept: [0, 12, 14, 15, 16, 17, 18, 20, 22, 23, 24, 25, 26, 27]
+
+  Delta: -85.2 (Gate: -91.7 | Full: -6.5) [Task: backward]
+  Question: In the 4x100m relay race, what significant contribution does the girl make to her team's performance?
+  Ref:      The girl is the first runner for her team (in red). She has an explosive start and runs very fast, leaving the other runners far behind. By the time she passes the baton, she has already created a significant lead for her team.
+  Full:     The girl in the 4x100m relay race makes a significant contribution by running the last 100 meters of the race.
+  Gate:     The girl in the 4x100m relay race makes a significant contribution by running the last leg of the race.
+  Frames:   4/33 kept: [0, 5, 7, 13]
+
+  Delta: -19.5 (Gate: -99.6 | Full: -80.0) [Task: instant]
+  Question: When the smartphone rings at the beginning of the demonstration, what specific physical action does the presenter perform to silence it?
+  Ref:      The video clearly shows the presenter picking up the ringing smartphone and flipping it completely over to place it face down on the table, which immediately silences the ringtone.
+  Full:     The presenter in the video uses his right hand to press the side button of the smartphone to silence it.
+  Gate:     The presenter in the video uses the phone's mute button to silence the smartphone at the beginning of the demonstration.
+  Frames:   5/33 kept: [0, 21, 23, 25, 29]
+
+  Delta: -9.2 (Gate: -96.4 | Full: -87.2) [Task: backward]
+  Question: During the flight phase, what action does the player perform on the interface before jumping?
+  Ref:      While the plane is flying over the island, the player opens the map interface and places a marker on it.
+  Full:     Before jumping, the player selects a folder on the interface.
+  Gate:     The player selects a sticky note on the interface before jumping.
+  Frames:   5/33 kept: [0, 6, 18, 20, 26]
+
+
+--- Condition gate@0.93 vs full (showing largest drops) ---
+  Delta: -199.6 (Gate: -99.8 | Full: 99.8) [Task: backward]
+  Question: Why did the note automatically appear in the "New Car" folder he just created?
+  Ref:      Because the folder is a "Smart Folder" with a specific rule. He set the rule to include any notes containing the tag "#new_car," so the note he previously created with that tag was automatically filtered into this folder.
+  Full:     The note automatically appeared in the "New Car" folder because it was tagged with the "New Car" tag.
+  Gate:     The note automatically appeared in the "New Car" folder because it was tagged with the "Car research" label.
+  Frames:   6/33 kept: [0, 3, 22, 26, 27, 31]
+
+  Delta: -143.7 (Gate: -53.9 | Full: 89.9) [Task: instant]
+  Question: What deeper political conspiracy does his inner voice link to the affair?
+  Ref:      He links the affair to a treasonous plot where the Shi family plans to rebel. His thoughts reveal that Shi Jingtang isn't just stealing his wife but is using the marriage to seize military power and eventually cede northern territories to the Hu tribe in exchange for support. This escalates the issue from a domestic affair to high treason.
+  Full:     The inner voice in the video links the affair to a deeper political conspiracy.
+  Gate:     I'm sorry, but I can't answer that.
+  Frames:   1/33 kept: [0]
+
+  Delta: -108.3 (Gate: -97.1 | Full: 11.2) [Task: backward]
+  Question: While walking on the flat deck of the overpass, why does she choose to walk beside the tactile paving rather than directly on it?
+  Ref:      She finds the tactile strips uncomfortable to walk on. She explains that constantly stepping on the raised speed-bump-like texture is physically tiring, so she prefers walking on the smooth pavement alongside the strips.
+  Full:     She chooses to walk beside the tactile paving because it provides a softer surface, which can be more comfortable and less likely to cause injury compared to walking directly on the pavement.
+  Gate:     She chooses to walk beside the tactile paving because it provides tactile feedback, which can help her navigate the uneven surface safely and comfortably.
+  Frames:   2/33 kept: [0, 2]
+
+  Delta: -99.5 (Gate: -99.9 | Full: -0.5) [Task: instant]
+  Question: Describe the visual appearance of the instructor and the setting in this "Morning Yoga" video.
+  Ref:      The instructor is a woman wearing a pink long-sleeved top and matching leggings. She is practicing on a blue yoga mat in a room with white tiled floors and a picture hanging on the back wall.
+  Full:     The instructor is wearing glasses and is standing in front of a white wall.
+  Gate:     The instructor is wearing a white shirt and is standing in front of a white wall.
+  Frames:   6/33 kept: [0, 1, 22, 23, 29, 30]
+
+  Delta: -97.1 (Gate: -97.1 | Full: 0.0) [Task: backward]
+  Question: How does the camera person's method of navigation change while interacting with the man who helps her find the '3rd Universe' shop?
+  Ref:      The camera person explicitly asks the man, "Can I hold you?" (in Chinese: "Wo la yi xia ni"), to which he agrees. Following this audio confirmation, the camera moves smoothly in close proximity to the man, indicating she is physically holding onto him to be guided through the crowd, rather than navigating solely with the cane.
+  Full:     The camera person's method of navigation changes by using the phone camera to interact with the man who helps her find the '3rd Universe' shop.
+  Gate:     The camera person's method of navigation changes by using the on-screen keyboard to type in the name of the shop.
+  Frames:   1/33 kept: [0]
+
+  Delta: -89.9 (Gate: -89.3 | Full: 0.6) [Task: backward]
+  Question: Combining all the features shown, what is the overarching goal the presenter is trying to achieve with the Mail app?
+  Ref:      The goal is to streamline productivity and reduce clutter. By using VIPs to filter important people, Smart Mailboxes to filter types of mail, and tools like PDF markup and Shortcuts to speed up tasks, the aim is to make the default Mail app more efficient and less overwhelming.
+  Full:     The presenter is demonstrating how to use the Mail app to send and receive messages, including the ability to compose and send messages, as well as the ability to view and reply to messages.
+  Gate:     The overarching goal the presenter is trying to achieve with the Mail app is to demonstrate the integration of the new features, such as the ability to send and receive messages, and the improved user experience, as seen in the video.
+  Frames:   3/33 kept: [0, 12, 20]
+
+  Delta: -88.8 (Gate: -100.0 | Full: -11.2) [Task: backward]
+  Question: What specific future knowledge in his thoughts causes her expression to turn from anger to shock?
+  Ref:      His thought that her empire will be destroyed and her lineage extinguished soon. While he internally laments that such a beauty will soon face 'national ruin and genocide', her eyes widen in genuine shock. This specific prophecy of doom distracts her from his earlier lewdness, as it concerns the fate of her kingdom.
+  Full:     The user's expression turns from anger to shock because they are witnessing a document being scanned on the tablet.
+  Gate:     There is no existence of any future knowledge or expression of anger or shock in the given information.
+  Frames:   15/33 kept: [0, 12, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27]
+
+  Delta: -85.2 (Gate: -91.7 | Full: -6.5) [Task: backward]
+  Question: In the 4x100m relay race, what significant contribution does the girl make to her team's performance?
+  Ref:      The girl is the first runner for her team (in red). She has an explosive start and runs very fast, leaving the other runners far behind. By the time she passes the baton, she has already created a significant lead for her team.
+  Full:     The girl in the 4x100m relay race makes a significant contribution by running the last 100 meters of the race.
+  Gate:     The girl in the 4x100m relay race makes a significant contribution by running the last leg of the race.
+  Frames:   10/33 kept: [0, 2, 5, 6, 7, 13, 15, 17, 22, 23]
+
+  Delta: -34.2 (Gate: -99.9 | Full: -65.7) [Task: instant]
+  Question: What cognitive skill does the bear demonstrate while handling this object?
+  Ref:      The bear displays physical strength by clutching the white container with its mouth while trying to climb onto the fence. Then the bear breaks through the fence and leaves the area..
+  Full:     The bear in the video is demonstrating the cognitive skill of grasping and manipulating objects.
+  Gate:     The bear in the video is not handling an object. It is a person's hand holding a phone.
+  Frames:   2/33 kept: [0, 32]
+
+  Delta: -9.2 (Gate: -96.4 | Full: -87.2) [Task: backward]
+  Question: During the flight phase, what action does the player perform on the interface before jumping?
+  Ref:      While the plane is flying over the island, the player opens the map interface and places a marker on it.
+  Full:     Before jumping, the player selects a folder on the interface.
+  Gate:     The player selects a sticky note on the interface before jumping.
+  Frames:   6/33 kept: [0, 6, 18, 19, 20, 26]
+
+
+--- Condition gate@0.95 vs full (showing largest drops) ---
+  Delta: -143.7 (Gate: -53.9 | Full: 89.9) [Task: instant]
+  Question: What deeper political conspiracy does his inner voice link to the affair?
+  Ref:      He links the affair to a treasonous plot where the Shi family plans to rebel. His thoughts reveal that Shi Jingtang isn't just stealing his wife but is using the marriage to seize military power and eventually cede northern territories to the Hu tribe in exchange for support. This escalates the issue from a domestic affair to high treason.
+  Full:     The inner voice in the video links the affair to a deeper political conspiracy.
+  Gate:     I'm sorry, but I can't answer that.
+  Frames:   2/33 kept: [0, 24]
+
+  Delta: -108.3 (Gate: -97.1 | Full: 11.2) [Task: backward]
+  Question: While walking on the flat deck of the overpass, why does she choose to walk beside the tactile paving rather than directly on it?
+  Ref:      She finds the tactile strips uncomfortable to walk on. She explains that constantly stepping on the raised speed-bump-like texture is physically tiring, so she prefers walking on the smooth pavement alongside the strips.
+  Full:     She chooses to walk beside the tactile paving because it provides a softer surface, which can be more comfortable and less likely to cause injury compared to walking directly on the pavement.
+  Gate:     She chooses to walk beside the tactile paving because it provides tactile feedback, which can help her navigate the uneven surface safely and comfortably.
+  Frames:   3/33 kept: [0, 2, 20]
+
+  Delta: -99.7 (Gate: -99.8 | Full: -0.1) [Task: instant]
+  Question: What action is currently being performed in the Mission Control interface?
+  Ref:      The cursor is moving to the top right corner of the screen and clicking on a plus (+) button that appears in the Mission Control bar.
+  Full:     The user is currently using the Mission Control interface to stream a video.
+  Gate:     The Mission Control interface is not being used in the current frame.
+  Frames:   5/33 kept: [0, 1, 4, 7, 8]
+
+  Delta: -99.5 (Gate: -99.9 | Full: -0.5) [Task: instant]
+  Question: Describe the visual appearance of the instructor and the setting in this "Morning Yoga" video.
+  Ref:      The instructor is a woman wearing a pink long-sleeved top and matching leggings. She is practicing on a blue yoga mat in a room with white tiled floors and a picture hanging on the back wall.
+  Full:     The instructor is wearing glasses and is standing in front of a white wall.
+  Gate:     The instructor is wearing a white shirt and is standing in front of a white wall.
+  Frames:   6/33 kept: [0, 1, 22, 23, 29, 30]
+
+  Delta: -97.1 (Gate: -97.1 | Full: 0.0) [Task: backward]
+  Question: How does the camera person's method of navigation change while interacting with the man who helps her find the '3rd Universe' shop?
+  Ref:      The camera person explicitly asks the man, "Can I hold you?" (in Chinese: "Wo la yi xia ni"), to which he agrees. Following this audio confirmation, the camera moves smoothly in close proximity to the man, indicating she is physically holding onto him to be guided through the crowd, rather than navigating solely with the cane.
+  Full:     The camera person's method of navigation changes by using the phone camera to interact with the man who helps her find the '3rd Universe' shop.
+  Gate:     The camera person's method of navigation changes by using the on-screen keyboard to type in the name of the shop.
+  Frames:   1/33 kept: [0]
+
+  Delta: -89.9 (Gate: -89.3 | Full: 0.6) [Task: backward]
+  Question: Combining all the features shown, what is the overarching goal the presenter is trying to achieve with the Mail app?
+  Ref:      The goal is to streamline productivity and reduce clutter. By using VIPs to filter important people, Smart Mailboxes to filter types of mail, and tools like PDF markup and Shortcuts to speed up tasks, the aim is to make the default Mail app more efficient and less overwhelming.
+  Full:     The presenter is demonstrating how to use the Mail app to send and receive messages, including the ability to compose and send messages, as well as the ability to view and reply to messages.
+  Gate:     The overarching goal the presenter is trying to achieve with the Mail app is to demonstrate the integration of the new features, such as the ability to send and receive messages, and the improved user experience, as seen in the video.
+  Frames:   3/33 kept: [0, 12, 20]
+
+  Delta: -88.8 (Gate: -100.0 | Full: -11.2) [Task: backward]
+  Question: What specific future knowledge in his thoughts causes her expression to turn from anger to shock?
+  Ref:      His thought that her empire will be destroyed and her lineage extinguished soon. While he internally laments that such a beauty will soon face 'national ruin and genocide', her eyes widen in genuine shock. This specific prophecy of doom distracts her from his earlier lewdness, as it concerns the fate of her kingdom.
+  Full:     The user's expression turns from anger to shock because they are witnessing a document being scanned on the tablet.
+  Gate:     There is no existence of any future knowledge or expression of anger or shock in the given information.
+  Frames:   16/33 kept: [0, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+
+  Delta: -85.2 (Gate: -91.7 | Full: -6.5) [Task: backward]
+  Question: In the 4x100m relay race, what significant contribution does the girl make to her team's performance?
+  Ref:      The girl is the first runner for her team (in red). She has an explosive start and runs very fast, leaving the other runners far behind. By the time she passes the baton, she has already created a significant lead for her team.
+  Full:     The girl in the 4x100m relay race makes a significant contribution by running the last 100 meters of the race.
+  Gate:     The girl in the 4x100m relay race makes a significant contribution by running the last leg of the race.
+  Frames:   16/33 kept: [0, 1, 5, 6, 7, 13, 14, 15, 16, 17, 21, 22, 23, 26, 29, 30]
+
+  Delta: -34.2 (Gate: -99.9 | Full: -65.7) [Task: instant]
+  Question: What cognitive skill does the bear demonstrate while handling this object?
+  Ref:      The bear displays physical strength by clutching the white container with its mouth while trying to climb onto the fence. Then the bear breaks through the fence and leaves the area..
+  Full:     The bear in the video is demonstrating the cognitive skill of grasping and manipulating objects.
+  Gate:     The bear in the video is not handling an object. It is a person's hand holding a phone.
+  Frames:   2/33 kept: [0, 32]
+
+  Delta: -9.2 (Gate: -96.4 | Full: -87.2) [Task: backward]
+  Question: During the flight phase, what action does the player perform on the interface before jumping?
+  Ref:      While the plane is flying over the island, the player opens the map interface and places a marker on it.
+  Full:     Before jumping, the player selects a folder on the interface.
+  Gate:     The player selects a sticky note on the interface before jumping.
+  Frames:   7/33 kept: [0, 6, 18, 19, 20, 26, 30]
+

@@ -1,0 +1,334 @@
+Metric: ent_con (x100)   Tasks: forward
+condition             n   score  frames   ViT ms  ViT %ideal  ViT %act  tokens  LLM s
+full                 74   -38.2    32.7     2198        100%      100%    2856   2.28
+gate@0.88            74   -26.7     3.6      522         24%       27%     425   1.00
+pixel@0.88           74   -27.5     3.6      240         11%       11%     425   1.03
+uniform@0.88         74   -26.3     3.6      240         11%       11%     425   1.02
+gate@0.9             74   -30.2     4.2      555         25%       29%     474   1.07
+pixel@0.9            74   -30.2     4.2      286         13%       13%     474   1.08
+uniform@0.9          74   -26.2     4.2      286         13%       13%     474   1.09
+gate@0.93            74   -32.4     5.9      640         29%       34%     616   1.15
+pixel@0.93           74   -33.3     5.9      400         18%       18%     616   1.14
+uniform@0.93         74   -31.5     5.9      400         18%       18%     616   1.14
+gate@0.95            74   -28.4     7.3      710         32%       38%     724   1.17
+pixel@0.95           74   -25.4     7.3      494         22%       22%     724   1.19
+uniform@0.95         74   -38.3     7.3      494         22%       22%     724   1.20
+
+Score by task (excluding parse failures):
+  full              forward=-38.2(n=74)
+  gate@0.88         forward=-26.7(n=74)
+  gate@0.9          forward=-30.2(n=74)
+  gate@0.93         forward=-32.4(n=74)
+  gate@0.95         forward=-28.4(n=74)
+  pixel@0.88        forward=-27.5(n=74)
+  pixel@0.9         forward=-30.2(n=74)
+  pixel@0.93        forward=-33.3(n=74)
+  pixel@0.95        forward=-25.4(n=74)
+  uniform@0.88      forward=-26.3(n=74)
+  uniform@0.9       forward=-26.2(n=74)
+  uniform@0.93      forward=-31.5(n=74)
+  uniform@0.95      forward=-38.3(n=74)
+
+Paired diff (gate - baseline), 95% bootstrap CI   (* = CI excludes 0):
+  gate@0.88          vs uniform@0.88         -0.4 [  -6.1,   +5.6] n=74    
+  gate@0.88          vs pixel@0.88           +0.8 [  -1.6,   +4.2] n=74    
+  gate@0.88          vs full                +11.5 [  -5.0,  +29.0] n=74    
+  gate@0.9           vs uniform@0.9          -4.0 [  -9.2,   +0.3] n=74    
+  gate@0.9           vs pixel@0.9            -0.0 [  -0.1,   +0.0] n=74    
+  gate@0.9           vs full                 +8.0 [  -8.6,  +26.0] n=74    
+  gate@0.93          vs uniform@0.93         -0.9 [  -9.4,   +7.6] n=74    
+  gate@0.93          vs pixel@0.93           +0.9 [  -3.3,   +6.3] n=74    
+  gate@0.93          vs full                 +5.8 [ -11.0,  +22.9] n=74    
+  gate@0.95          vs uniform@0.95         +9.9 [  +0.9,  +20.0] n=74   *
+  gate@0.95          vs pixel@0.95           -3.0 [  -8.7,   +0.1] n=74    
+  gate@0.95          vs full                 +9.7 [  -6.0,  +24.6] n=74    
+
+=== ERROR ANALYSIS: 10 WORST DROPS VS FULL ===
+
+--- Condition gate@0.88 vs full (showing largest drops) ---
+  Delta: -199.6 (Gate: -100.0 | Full: 99.6) [Task: forward]
+  Question: Tell me when she switches to the next exercise 'Back Turns', describe the coordination between her arm extension and torso rotation.
+  Ref:      At this moment, the instructor has just transitioned into the 'Back Turns' exercise following the countdown. She performs the movement by keeping her feet planted and rotating her upper body. Visual evidence shows her extending one arm straight front at shoulder level while turning her head to gaze at her hand, alternating this coordination first to the right and then to the left, which matches the activity name displayed earlier.
+  Full:     The woman switches to the next exercise 'Back Turns' after she has extended her arm and rotated her torso.
+  Gate:     The video does not show any information about the exercise 'Back Turns' or the coordination between arm extension and torso rotation.
+  Frames:   3/33 kept: [0, 1, 3]
+
+  Delta: -187.7 (Gate: -98.5 | Full: 89.2) [Task: forward]
+  Question: Wait until the camera pans to the interior and the consultant describes the seats, tell me what is the maintenance condition mentioned?
+  Ref:      As the camera shows the interior, the consultant explicitly states that the 'previous owner maintained it very well' and points out there is 'almost no wear' on the seats, specifically highlighting the driver's seat to confirm its pristine condition.
+  Full:     The maintenance condition mentioned is "good."
+  Gate:     The maintenance condition mentioned is "This is my note."
+  Frames:   5/33 kept: [0, 2, 5, 9, 11]
+
+  Delta: -109.9 (Gate: -13.3 | Full: 96.6) [Task: forward]
+  Question: Tell me when the kill situation announcement is heard, observing the kill feed, who defeated whom?
+  Ref:      At this moment, a "Defeated" (击败) announcement appears at the top center. According to the hero headshot icons, it is confirmed that the allied hero Daji(left icon) has successfully defeated the enemy hero (right icon marked with a red cross). At this moment, the player is controlling the hero Sima Yi as they move across the battlefield.
+  Full:     The kill situation announcement is heard, and the kill feed shows who defeated whom.
+  Gate:     The kill situation announcement is heard in the video at the timestamp F0=249.0s. The kill feed shows that the player who defeated the other player is the one in the video.
+  Frames:   3/33 kept: [0, 1, 3]
+
+  Delta: -99.7 (Gate: 0.1 | Full: 99.9) [Task: forward]
+  Question: Tell me when he finishes manipulating the results window on the foldable device, how does the window's position change?
+  Ref:      At this moment, the host has finished dragging the summary window. He undocked the panel from the bottom, converting it into a floating window which he then placed on the right side of the screen. This visual change corresponds to his explanation of creating a "multi-window sort of view" to preserve "screen real estate" and provide a better overview on the foldable display.
+  Full:     The window's position changes to the right side of the screen.
+  Gate:     The user finishes manipulating the results window on the foldable device when the video ends at 364 seconds. After that, the window is no longer visible on the screen.
+  Frames:   1/33 kept: [0]
+
+  Delta: -99.0 (Gate: -99.9 | Full: -0.9) [Task: forward]
+  Question: Wait until the focus moves from the face, tell me, which body part is targeted next?
+  Ref:      The guide directs the listener's attention specifically to the base of the throat (hou long gen bu), confirming the shift in bodily focus.
+  Full:     The next body part targeted after the focus moves from the face is the hand.
+  Gate:     The focus is on the face.
+  Frames:   3/33 kept: [0, 17, 30]
+
+  Delta: -97.0 (Gate: -0.5 | Full: 96.5) [Task: forward]
+  Question: It's the end of her day. Wait until she starts her hair care routine, tell me what she does.
+  Ref:      She takes a bottle with a comb applicator and applies a brown oil mixture directly onto her scalp in sections, then begins to massage it in. She mentions it's an oil mixture she discovered on TikTok that she will let soak in before her bath.
+  Full:     She will wash her hair.
+  Gate:     She uses her iPad to do research.
+  Frames:   4/33 kept: [0, 3, 22, 26]
+
+  Delta: -94.5 (Gate: 0.3 | Full: 94.7) [Task: forward]
+  Question: That was an amazing surprise! Now Joe is interacting with a woman on stage. Wait until their interaction is over and tell me, what happens between them?
+  Ref:      During this performance segment, the female guitarist plays a solo. Joe Jonas kneels in front of her, looking up at her. As the solo intensifies, she leans down and gently touches his chin and face before he stands up and she bows.
+  Full:     After the woman finishes interacting with Joe, the interaction between them ends.
+  Gate:     After the interaction between Joe and the woman on stage is over, the video will likely end.
+  Frames:   1/33 kept: [0]
+
+  Delta: -85.7 (Gate: -85.7 | Full: -0.0) [Task: forward]
+  Question: Tell me when she finishes explaining her workaround for the wall intercom, how does she manage to let delivery drivers in despite the screen being inaccessible?
+  Ref:      At this moment, she concludes her explanation by stating that since the intercom is a flat touch screen and she cannot locate the unlock button, she instructs delivery drivers to press the 'call property management' button on the downstairs panel instead. This allows the property management staff to open the door for them, bypassing her need to operate the inaccessible screen.
+  Full:     She finishes explaining her workaround for the wall intercom after 59.0 seconds.
+  Gate:     The video ends at F1.
+  Frames:   3/33 kept: [0, 3, 14]
+
+  Delta: -80.9 (Gate: -99.9 | Full: -19.0) [Task: forward]
+  Question: Tell me when she selects the cakes she wants to buy, how does she navigate the choices without seeing them?
+  Ref:      At this moment, standing in front of a glass display case featuring a chef statue, the protagonist verbally confirms her decision to purchase one "dragon fruit" cake and one "Oreo" cake. Since she cannot visually inspect or touch the items inside the case, she relies entirely on the staff member's auditory descriptions of the specific flavors to make her selection.
+  Full:     She can use the "Show in Full Screen" feature to view the cakes in full screen.
+  Gate:     She uses the camera to see the cakes and then navigates them by scrolling and zooming in and out.
+  Frames:   1/33 kept: [0]
+
+  Delta: -25.8 (Gate: -0.0 | Full: 25.8) [Task: forward]
+  Question: Tell me when she places the phone on the stand, what specific conditions trigger the new display mode?
+  Ref:      At this moment, the phone is resting on a charging stand, displaying a digital clock with a black background. The host explains the conditions for activating this 'Standby Mode': the phone must be connected to power and placed horizontally in an upright position. She explicitly mentions that the mode will not trigger if the phone is lying flat.
+  Full:     The new display mode is triggered when the person places the phone on the stand.
+  Gate:     The phone is placed on the stand at F14.5s.
+  Frames:   4/33 kept: [0, 10, 11, 31]
+
+
+--- Condition gate@0.9 vs full (showing largest drops) ---
+  Delta: -199.6 (Gate: -100.0 | Full: 99.6) [Task: forward]
+  Question: Tell me when she switches to the next exercise 'Back Turns', describe the coordination between her arm extension and torso rotation.
+  Ref:      At this moment, the instructor has just transitioned into the 'Back Turns' exercise following the countdown. She performs the movement by keeping her feet planted and rotating her upper body. Visual evidence shows her extending one arm straight front at shoulder level while turning her head to gaze at her hand, alternating this coordination first to the right and then to the left, which matches the activity name displayed earlier.
+  Full:     The woman switches to the next exercise 'Back Turns' after she has extended her arm and rotated her torso.
+  Gate:     The video does not show any specific exercise called 'Back Turns'.
+  Frames:   7/33 kept: [0, 1, 2, 14, 16, 20, 31]
+
+  Delta: -196.4 (Gate: -99.9 | Full: 96.5) [Task: forward]
+  Question: It's the end of her day. Wait until she starts her hair care routine, tell me what she does.
+  Ref:      She takes a bottle with a comb applicator and applies a brown oil mixture directly onto her scalp in sections, then begins to massage it in. She mentions it's an oil mixture she discovered on TikTok that she will let soak in before her bath.
+  Full:     She will wash her hair.
+  Gate:     She starts her hair care routine by washing her hair.
+  Frames:   6/33 kept: [0, 3, 22, 26, 27, 31]
+
+  Delta: -187.7 (Gate: -98.5 | Full: 89.2) [Task: forward]
+  Question: Wait until the camera pans to the interior and the consultant describes the seats, tell me what is the maintenance condition mentioned?
+  Ref:      As the camera shows the interior, the consultant explicitly states that the 'previous owner maintained it very well' and points out there is 'almost no wear' on the seats, specifically highlighting the driver's seat to confirm its pristine condition.
+  Full:     The maintenance condition mentioned is "good."
+  Gate:     The maintenance condition mentioned is "This is my note."
+  Frames:   5/33 kept: [0, 2, 5, 9, 11]
+
+  Delta: -109.9 (Gate: -13.3 | Full: 96.6) [Task: forward]
+  Question: Tell me when the kill situation announcement is heard, observing the kill feed, who defeated whom?
+  Ref:      At this moment, a "Defeated" (击败) announcement appears at the top center. According to the hero headshot icons, it is confirmed that the allied hero Daji(left icon) has successfully defeated the enemy hero (right icon marked with a red cross). At this moment, the player is controlling the hero Sima Yi as they move across the battlefield.
+  Full:     The kill situation announcement is heard, and the kill feed shows who defeated whom.
+  Gate:     The kill situation announcement is heard in the video at the timestamp F0=249.0s. The kill feed shows that the player who defeated the other player is the one in the video.
+  Frames:   3/33 kept: [0, 1, 3]
+
+  Delta: -99.7 (Gate: 0.1 | Full: 99.9) [Task: forward]
+  Question: Tell me when he finishes manipulating the results window on the foldable device, how does the window's position change?
+  Ref:      At this moment, the host has finished dragging the summary window. He undocked the panel from the bottom, converting it into a floating window which he then placed on the right side of the screen. This visual change corresponds to his explanation of creating a "multi-window sort of view" to preserve "screen real estate" and provide a better overview on the foldable display.
+  Full:     The window's position changes to the right side of the screen.
+  Gate:     The user finishes manipulating the results window on the foldable device when the video ends at 364 seconds. After that, the window is no longer visible on the screen.
+  Frames:   1/33 kept: [0]
+
+  Delta: -99.0 (Gate: -99.9 | Full: -0.9) [Task: forward]
+  Question: Wait until the focus moves from the face, tell me, which body part is targeted next?
+  Ref:      The guide directs the listener's attention specifically to the base of the throat (hou long gen bu), confirming the shift in bodily focus.
+  Full:     The next body part targeted after the focus moves from the face is the hand.
+  Gate:     The focus is on the face.
+  Frames:   3/33 kept: [0, 17, 30]
+
+  Delta: -94.5 (Gate: 0.3 | Full: 94.7) [Task: forward]
+  Question: That was an amazing surprise! Now Joe is interacting with a woman on stage. Wait until their interaction is over and tell me, what happens between them?
+  Ref:      During this performance segment, the female guitarist plays a solo. Joe Jonas kneels in front of her, looking up at her. As the solo intensifies, she leans down and gently touches his chin and face before he stands up and she bows.
+  Full:     After the woman finishes interacting with Joe, the interaction between them ends.
+  Gate:     After the interaction between Joe and the woman on stage is over, the video will likely end.
+  Frames:   1/33 kept: [0]
+
+  Delta: -85.7 (Gate: -85.7 | Full: -0.0) [Task: forward]
+  Question: Tell me when she finishes explaining her workaround for the wall intercom, how does she manage to let delivery drivers in despite the screen being inaccessible?
+  Ref:      At this moment, she concludes her explanation by stating that since the intercom is a flat touch screen and she cannot locate the unlock button, she instructs delivery drivers to press the 'call property management' button on the downstairs panel instead. This allows the property management staff to open the door for them, bypassing her need to operate the inaccessible screen.
+  Full:     She finishes explaining her workaround for the wall intercom after 59.0 seconds.
+  Gate:     The video ends at F1.
+  Frames:   3/33 kept: [0, 3, 14]
+
+  Delta: -80.9 (Gate: -99.9 | Full: -19.0) [Task: forward]
+  Question: Tell me when she selects the cakes she wants to buy, how does she navigate the choices without seeing them?
+  Ref:      At this moment, standing in front of a glass display case featuring a chef statue, the protagonist verbally confirms her decision to purchase one "dragon fruit" cake and one "Oreo" cake. Since she cannot visually inspect or touch the items inside the case, she relies entirely on the staff member's auditory descriptions of the specific flavors to make her selection.
+  Full:     She can use the "Show in Full Screen" feature to view the cakes in full screen.
+  Gate:     She uses the camera to see the cakes and then navigates them by scrolling and zooming in and out.
+  Frames:   1/33 kept: [0]
+
+  Delta: -27.5 (Gate: -99.6 | Full: -72.2) [Task: forward]
+  Question: Tell me when the 'Active Safety' section appears, specifically for the 'DOW Open Door Warning', which cars are marked as having this feature?
+  Ref:      At this moment, the comparison table has settled on the 'Active Safety' section. The row for 'DOW Open Door Warning' clearly shows black dots for the **Xiaomi SU7**, **Xpeng P7+**, and **Xpeng MONA M03**, indicating they are equipped with this feature. In contrast, the **Tesla Model 3** column and the **Xpeng G3** column display a dash, suggesting the data is either absent or the feature is not listed in this specific comparison view. This observation aligns with the 'Active Safety' header visible at the top of the section.
+  Full:     The 'Active Safety' section for the 'DOW Open Door Warning' appears at the 494.0-second mark. The cars marked as having this feature are the BMW 3 Series, BMW 5 Series, and BMW X5.
+  Gate:     The 'Active Safety' section appears at F0 seconds. The 'DOW Open Door Warning' feature is marked for the 'Honda Civic' and 'Toyota Corolla'.
+  Frames:   4/33 kept: [0, 2, 14, 15]
+
+
+--- Condition gate@0.93 vs full (showing largest drops) ---
+  Delta: -199.6 (Gate: -100.0 | Full: 99.6) [Task: forward]
+  Question: Tell me when she switches to the next exercise 'Back Turns', describe the coordination between her arm extension and torso rotation.
+  Ref:      At this moment, the instructor has just transitioned into the 'Back Turns' exercise following the countdown. She performs the movement by keeping her feet planted and rotating her upper body. Visual evidence shows her extending one arm straight front at shoulder level while turning her head to gaze at her hand, alternating this coordination first to the right and then to the left, which matches the activity name displayed earlier.
+  Full:     The woman switches to the next exercise 'Back Turns' after she has extended her arm and rotated her torso.
+  Gate:     The video does not show any specific exercise called 'Back Turns'.
+  Frames:   14/33 kept: [0, 1, 2, 10, 13, 14, 15, 16, 17, 18, 20, 21, 24, 26]
+
+  Delta: -196.7 (Gate: -99.8 | Full: 96.9) [Task: forward]
+  Question: Tell me when he explains the rule of thirds, what visual examples does he use to demonstrate proper composition, and how does the subject placement relate to this concept?
+  Ref:      At this moment, the speaker uses visual examples to explain the rule of thirds. He specifically displays a photo of an orange building positioned in the center of the frame as a negative example of a "boring composition." He then illustrates the concept of dividing the frame and positioning subjects in the thirds using footage of a harbor and a top-down view of a hand holding a small white camera and red hearts. He explains that shifting the subject away from the center allows for better use of empty space, resulting in a more balanced and dynamic image compared to the initial centered example.
+  Full:     The man explains the rule of thirds by showing a visual example of a photograph where the subject is placed in the middle of the frame, dividing it into thirds both horizontally and vertically. He uses this example to demonstrate how the subject should be positioned to create a balanced and visually appealing composition.
+  Gate:     The man explains the rule of thirds by showing examples of compositions that follow this rule. He demonstrates how the subject is placed in the middle of the frame, creating a balanced and visually appealing arrangement.
+  Frames:   12/33 kept: [0, 11, 12, 20, 23, 24, 25, 26, 27, 28, 30, 31]
+
+  Delta: -196.4 (Gate: -99.9 | Full: 96.5) [Task: forward]
+  Question: It's the end of her day. Wait until she starts her hair care routine, tell me what she does.
+  Ref:      She takes a bottle with a comb applicator and applies a brown oil mixture directly onto her scalp in sections, then begins to massage it in. She mentions it's an oil mixture she discovered on TikTok that she will let soak in before her bath.
+  Full:     She will wash her hair.
+  Gate:     She starts her hair care routine by washing her hair.
+  Frames:   6/33 kept: [0, 3, 22, 26, 27, 31]
+
+  Delta: -187.7 (Gate: -98.5 | Full: 89.2) [Task: forward]
+  Question: Wait until the camera pans to the interior and the consultant describes the seats, tell me what is the maintenance condition mentioned?
+  Ref:      As the camera shows the interior, the consultant explicitly states that the 'previous owner maintained it very well' and points out there is 'almost no wear' on the seats, specifically highlighting the driver's seat to confirm its pristine condition.
+  Full:     The maintenance condition mentioned is "good."
+  Gate:     The maintenance condition mentioned is "This is my note."
+  Frames:   5/33 kept: [0, 2, 5, 9, 11]
+
+  Delta: -109.9 (Gate: -13.3 | Full: 96.6) [Task: forward]
+  Question: Tell me when the kill situation announcement is heard, observing the kill feed, who defeated whom?
+  Ref:      At this moment, a "Defeated" (击败) announcement appears at the top center. According to the hero headshot icons, it is confirmed that the allied hero Daji(left icon) has successfully defeated the enemy hero (right icon marked with a red cross). At this moment, the player is controlling the hero Sima Yi as they move across the battlefield.
+  Full:     The kill situation announcement is heard, and the kill feed shows who defeated whom.
+  Gate:     The kill situation announcement is heard in the video at the timestamp F0=249.0s. The kill feed shows that the player who defeated the other player is the one in the video.
+  Frames:   3/33 kept: [0, 1, 3]
+
+  Delta: -99.0 (Gate: -99.9 | Full: -0.9) [Task: forward]
+  Question: Wait until the focus moves from the face, tell me, which body part is targeted next?
+  Ref:      The guide directs the listener's attention specifically to the base of the throat (hou long gen bu), confirming the shift in bodily focus.
+  Full:     The next body part targeted after the focus moves from the face is the hand.
+  Gate:     The focus is on the face.
+  Frames:   3/33 kept: [0, 17, 30]
+
+  Delta: -94.5 (Gate: 0.3 | Full: 94.7) [Task: forward]
+  Question: That was an amazing surprise! Now Joe is interacting with a woman on stage. Wait until their interaction is over and tell me, what happens between them?
+  Ref:      During this performance segment, the female guitarist plays a solo. Joe Jonas kneels in front of her, looking up at her. As the solo intensifies, she leans down and gently touches his chin and face before he stands up and she bows.
+  Full:     After the woman finishes interacting with Joe, the interaction between them ends.
+  Gate:     After the interaction between Joe and the woman on stage is over, the video will likely end.
+  Frames:   1/33 kept: [0]
+
+  Delta: -87.3 (Gate: -87.2 | Full: 0.1) [Task: forward]
+  Question: Tell me when he enters the edit mode for the "Time Tracking" shortcut, what specific guidance is provided in the comment box at the top?
+  Ref:      At this moment, after tapping the ellipsis icon, the screen transitions to the shortcut editor view. A comment action, highlighted with a yellow background, appears at the top of the list. The text inside reads "Configure list of activities or incidents to track time back in the list below." This visual note aligns with the narrator's explanation that the user needs to manually input specific activity data into the list action underneath for the time tracking automation to function properly.
+  Full:     The user is instructed to click on the "Edit" button in the comment box at the top.
+  Gate:     The user enters the edit mode for the "Time Tracking" shortcut by clicking on the "Edit" button located at the top of the screen.
+  Frames:   5/33 kept: [0, 7, 8, 10, 18]
+
+  Delta: -80.9 (Gate: -99.9 | Full: -19.0) [Task: forward]
+  Question: Tell me when she selects the cakes she wants to buy, how does she navigate the choices without seeing them?
+  Ref:      At this moment, standing in front of a glass display case featuring a chef statue, the protagonist verbally confirms her decision to purchase one "dragon fruit" cake and one "Oreo" cake. Since she cannot visually inspect or touch the items inside the case, she relies entirely on the staff member's auditory descriptions of the specific flavors to make her selection.
+  Full:     She can use the "Show in Full Screen" feature to view the cakes in full screen.
+  Gate:     She uses the camera to see the cakes and then navigates them by scrolling and zooming in and out.
+  Frames:   1/33 kept: [0]
+
+  Delta: -27.5 (Gate: -99.6 | Full: -72.2) [Task: forward]
+  Question: Tell me when the 'Active Safety' section appears, specifically for the 'DOW Open Door Warning', which cars are marked as having this feature?
+  Ref:      At this moment, the comparison table has settled on the 'Active Safety' section. The row for 'DOW Open Door Warning' clearly shows black dots for the **Xiaomi SU7**, **Xpeng P7+**, and **Xpeng MONA M03**, indicating they are equipped with this feature. In contrast, the **Tesla Model 3** column and the **Xpeng G3** column display a dash, suggesting the data is either absent or the feature is not listed in this specific comparison view. This observation aligns with the 'Active Safety' header visible at the top of the section.
+  Full:     The 'Active Safety' section for the 'DOW Open Door Warning' appears at the 494.0-second mark. The cars marked as having this feature are the BMW 3 Series, BMW 5 Series, and BMW X5.
+  Gate:     The 'Active Safety' section appears at F0 seconds. The 'DOW Open Door Warning' feature is marked for the 'Honda Civic' and 'Toyota Corolla'.
+  Frames:   5/33 kept: [0, 2, 14, 15, 19]
+
+
+--- Condition gate@0.95 vs full (showing largest drops) ---
+  Delta: -196.7 (Gate: -99.8 | Full: 96.9) [Task: forward]
+  Question: Tell me when he explains the rule of thirds, what visual examples does he use to demonstrate proper composition, and how does the subject placement relate to this concept?
+  Ref:      At this moment, the speaker uses visual examples to explain the rule of thirds. He specifically displays a photo of an orange building positioned in the center of the frame as a negative example of a "boring composition." He then illustrates the concept of dividing the frame and positioning subjects in the thirds using footage of a harbor and a top-down view of a hand holding a small white camera and red hearts. He explains that shifting the subject away from the center allows for better use of empty space, resulting in a more balanced and dynamic image compared to the initial centered example.
+  Full:     The man explains the rule of thirds by showing a visual example of a photograph where the subject is placed in the middle of the frame, dividing it into thirds both horizontally and vertically. He uses this example to demonstrate how the subject should be positioned to create a balanced and visually appealing composition.
+  Gate:     The man explains the rule of thirds by showing examples of compositions that follow this rule. He demonstrates how the subject is placed in the middle of the frame, creating a balanced and visually appealing arrangement.
+  Frames:   15/33 kept: [0, 11, 12, 13, 14, 19, 23, 24, 25, 26, 27, 28, 30, 31, 32]
+
+  Delta: -187.7 (Gate: -98.5 | Full: 89.2) [Task: forward]
+  Question: Wait until the camera pans to the interior and the consultant describes the seats, tell me what is the maintenance condition mentioned?
+  Ref:      As the camera shows the interior, the consultant explicitly states that the 'previous owner maintained it very well' and points out there is 'almost no wear' on the seats, specifically highlighting the driver's seat to confirm its pristine condition.
+  Full:     The maintenance condition mentioned is "good."
+  Gate:     The maintenance condition mentioned is "This is my note."
+  Frames:   5/33 kept: [0, 2, 5, 9, 11]
+
+  Delta: -109.9 (Gate: -13.3 | Full: 96.6) [Task: forward]
+  Question: Tell me when the kill situation announcement is heard, observing the kill feed, who defeated whom?
+  Ref:      At this moment, a "Defeated" (击败) announcement appears at the top center. According to the hero headshot icons, it is confirmed that the allied hero Daji(left icon) has successfully defeated the enemy hero (right icon marked with a red cross). At this moment, the player is controlling the hero Sima Yi as they move across the battlefield.
+  Full:     The kill situation announcement is heard, and the kill feed shows who defeated whom.
+  Gate:     The kill situation announcement is heard in the video at the timestamp F0=249.0s. The kill feed shows that the player who defeated the other player is the one in the video.
+  Frames:   3/33 kept: [0, 1, 3]
+
+  Delta: -99.0 (Gate: -99.9 | Full: -0.9) [Task: forward]
+  Question: Wait until the focus moves from the face, tell me, which body part is targeted next?
+  Ref:      The guide directs the listener's attention specifically to the base of the throat (hou long gen bu), confirming the shift in bodily focus.
+  Full:     The next body part targeted after the focus moves from the face is the hand.
+  Gate:     The focus is on the face.
+  Frames:   3/33 kept: [0, 17, 30]
+
+  Delta: -94.4 (Gate: 0.3 | Full: 94.7) [Task: forward]
+  Question: That was an amazing surprise! Now Joe is interacting with a woman on stage. Wait until their interaction is over and tell me, what happens between them?
+  Ref:      During this performance segment, the female guitarist plays a solo. Joe Jonas kneels in front of her, looking up at her. As the solo intensifies, she leans down and gently touches his chin and face before he stands up and she bows.
+  Full:     After the woman finishes interacting with Joe, the interaction between them ends.
+  Gate:     After the interaction between Joe and the woman on stage is over, the camera will likely return to the presenter or the previous scene.
+  Frames:   2/33 kept: [0, 21]
+
+  Delta: -87.3 (Gate: -87.2 | Full: 0.1) [Task: forward]
+  Question: Tell me when he enters the edit mode for the "Time Tracking" shortcut, what specific guidance is provided in the comment box at the top?
+  Ref:      At this moment, after tapping the ellipsis icon, the screen transitions to the shortcut editor view. A comment action, highlighted with a yellow background, appears at the top of the list. The text inside reads "Configure list of activities or incidents to track time back in the list below." This visual note aligns with the narrator's explanation that the user needs to manually input specific activity data into the list action underneath for the time tracking automation to function properly.
+  Full:     The user is instructed to click on the "Edit" button in the comment box at the top.
+  Gate:     The user enters the edit mode for the "Time Tracking" shortcut by clicking on the "Edit" button located at the top of the screen.
+  Frames:   6/33 kept: [0, 4, 7, 8, 10, 18]
+
+  Delta: -80.9 (Gate: -99.9 | Full: -19.0) [Task: forward]
+  Question: Tell me when she selects the cakes she wants to buy, how does she navigate the choices without seeing them?
+  Ref:      At this moment, standing in front of a glass display case featuring a chef statue, the protagonist verbally confirms her decision to purchase one "dragon fruit" cake and one "Oreo" cake. Since she cannot visually inspect or touch the items inside the case, she relies entirely on the staff member's auditory descriptions of the specific flavors to make her selection.
+  Full:     She can use the "Show in Full Screen" feature to view the cakes in full screen.
+  Gate:     She uses the camera to see the cakes and then navigates them by scrolling and zooming in and out.
+  Frames:   1/33 kept: [0]
+
+  Delta: -32.4 (Gate: -31.6 | Full: 0.8) [Task: forward]
+  Question: Let me know when the navigation voice starts speaking, what information makes the user realize she made a mistake in the settings?
+  Ref:      At this moment, the navigation voice activates, displaying the subtitle "Driving is a little comity" and announcing a total distance of "1.4 kilometers." This distance significantly exceeds the expected 200 meters, alerting the user to the error. She immediately reacts by saying "No, no" and verbally confirms, "I set it to driving navigation" (partially subtitled as "I turned left after 350 meters of driving navigation"), acknowledging that she accidentally selected the vehicle mode instead of walking. This audio-visual feedback completely answers the user's query.
+  Full:     The navigation voice starts speaking after 20.5 seconds. The user realizes she made a mistake in the settings after 21.0 seconds.
+  Gate:     The navigation voice starts speaking at the timestamp F1. The user realizes she made a mistake in the settings at the timestamp F13.
+  Frames:   16/33 kept: [0, 9, 10, 11, 12, 17, 21, 22, 23, 24, 25, 26, 28, 29, 30, 32]
+
+  Delta: -27.5 (Gate: -99.6 | Full: -72.2) [Task: forward]
+  Question: Tell me when the 'Active Safety' section appears, specifically for the 'DOW Open Door Warning', which cars are marked as having this feature?
+  Ref:      At this moment, the comparison table has settled on the 'Active Safety' section. The row for 'DOW Open Door Warning' clearly shows black dots for the **Xiaomi SU7**, **Xpeng P7+**, and **Xpeng MONA M03**, indicating they are equipped with this feature. In contrast, the **Tesla Model 3** column and the **Xpeng G3** column display a dash, suggesting the data is either absent or the feature is not listed in this specific comparison view. This observation aligns with the 'Active Safety' header visible at the top of the section.
+  Full:     The 'Active Safety' section for the 'DOW Open Door Warning' appears at the 494.0-second mark. The cars marked as having this feature are the BMW 3 Series, BMW 5 Series, and BMW X5.
+  Gate:     The 'Active Safety' section appears at F0 seconds. The 'DOW Open Door Warning' feature is marked for the 'Honda Civic' and 'Toyota Corolla'.
+  Frames:   6/33 kept: [0, 2, 5, 14, 15, 19]
+
+  Delta: -26.4 (Gate: 73.2 | Full: 99.6) [Task: forward]
+  Question: Tell me when she switches to the next exercise 'Back Turns', describe the coordination between her arm extension and torso rotation.
+  Ref:      At this moment, the instructor has just transitioned into the 'Back Turns' exercise following the countdown. She performs the movement by keeping her feet planted and rotating her upper body. Visual evidence shows her extending one arm straight front at shoulder level while turning her head to gaze at her hand, alternating this coordination first to the right and then to the left, which matches the activity name displayed earlier.
+  Full:     The woman switches to the next exercise 'Back Turns' after she has extended her arm and rotated her torso.
+  Gate:     The woman switches to the next exercise 'Back Turns' at F14. The coordination between her arm extension and torso rotation is shown at F14.
+  Frames:   19/33 kept: [0, 1, 2, 3, 4, 9, 13, 14, 15, 16, 17, 18, 20, 21, 22, 24, 25, 26, 30]
+
