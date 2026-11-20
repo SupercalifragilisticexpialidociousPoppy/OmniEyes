@@ -1,13 +1,13 @@
-# Task 4 — Iteration 1: Codifying H18 (Early-Layer Variance Gating)
+# Task 4 — Iteration 1: Codifying OmniEyes (Early-Layer Variance Gating)
 
 *File paths in this document are relative to the repository root.*
 
 ## 1. Idea selected and why
-We chose **H18**, ranked #1 in 2C2/Final Submission. It needs no training: the VLM stays frozen and we only add an inference wrapper. That makes it the only top-ranked idea we can run on our hardware (a Colab T4 and an RTX 3050). H16 needs SFT plus a simulated-user harness, and H19 needs changes to the KV cache.
+We chose **OmniEyes** (early-layer variance gating; idea **H18** in the 2C2/Final Submission ranking, where it ranked #1). It needs no training: the VLM stays frozen and we only add an inference wrapper. That makes it the only top-ranked idea we can run on our hardware (a Colab T4 and an RTX 3050). H16 needs SFT plus a simulated-user harness, and H19 needs changes to the KV cache.
 
 ## 2. Issues found before codification (spec as written vs. what can be run)
 
-| # | Issue in the original H18 spec | Type | Refinement adopted |
+| # | Issue in the original OmniEyes spec | Type | Refinement adopted |
 |---|---|---|---|
 | 1 | "Qwen-VL or LLaVA" does not name a model; PhoStream baselines are 7B–30B | Missing detail / compute | **Qwen2-VL-2B-Instruct** (32-block ViT, fp16, fits a T4) |
 | 2 | Acquisition at "5 Hz", but PhoStream videos are re-encoded at **2 fps** | Inconsistency | Acquisition fixed at **2 Hz** |
@@ -16,7 +16,7 @@ We chose **H18**, ranked #1 in 2C2/Final Submission. It needs no training: the V
 | 5 | "Reuse the KV cache of the previous frame" is undefined for streaming | Ambiguity | Skipped frames are **dropped** from the context; the last kept frame stands in for them |
 | 6 | C++/LibTorch wrapper | Unnecessary effort | PyTorch **forward hook** that raises an exception to stop the ViT after block K (works across model versions) |
 | 7 | Gate overhead might cancel the savings (Handoff2 Q1) | Feasibility risk | Measure gate ms and full-ViT ms per frame and report ViT cost per condition |
-| 8 | Forward questions test response *timing* (Early Response), which H18 does not change | Scope mismatch | Iteration 1 evaluates **Instant + Backward** questions only; Forward is left for iteration 2 |
+| 8 | Forward questions test response *timing* (Early Response), which OmniEyes does not change | Scope mismatch | Iteration 1 evaluates **Instant + Backward** questions only; Forward is left for iteration 2 |
 | 9 | PhoStream's judge is Qwen3-235B, which we cannot run | Compute | A local, API-free **NLI-based grader** (§4.1), validated against human labels, scores **all conditions identically**; we compare conditions against each other, not against published absolute scores |
 | 10 | Is the ViT needed at all, or would plain frame differencing work just as well? | Missing baseline | Added a **pixel-difference gate** baseline at the same frame budget |
 | 11 | The annotation schema is not documented on the dataset card | Missing detail | The loader probes and maps the fields (`src/data.py`) |
@@ -81,7 +81,7 @@ Score = `ent_con` (DeBERTa-v3-large NLI), mean over ~148 questions, from `result
 | uniform@0.95 | −28.2 | 15.9 | 50% | 1270 | 1.68 |
 | pixel@0.95 | −24.8 | 15.9 | 50% | 1270 | 1.68 |
 
-The negative absolute scores mean that the reference more often contradicts than supports the 2B model's answers. Qwen2-VL-2B is weak on this task in absolute terms, which is expected at this scale and is not what H18 tests.
+The negative absolute scores mean that the reference more often contradicts than supports the 2B model's answers. Qwen2-VL-2B is weak on this task in absolute terms, which is expected at this scale and is not what OmniEyes tests.
 
 Paired differences, gate − baseline (95% bootstrap CI):
 
@@ -115,7 +115,7 @@ Score by task type:
 ## 6. Comparison to state of the art
 Published PhoStream Instant/Backward results (Table 3) evaluate larger 7B–30B backbone architectures using a 235B parameter judge (Qwen3-235B), so our absolute scores with a local 2B model are not directly comparable.
 
-Instead, H18 targets relative efficiency vs. performance scaling:
+Instead, OmniEyes targets relative efficiency vs. performance scaling:
 
 - Frame Reduction: At τ = 0.90, gate prunes average frame count down to 9.5 frames/stream (from 32.1), matching the visual sampling budget of uniform@0.90 (9.4 frames) and pixel@0.90 (9.4 frames).
 - Latency Scaling: LLM decode latency scales linearly with frame budget, dropping from 2.73s (full, 32.1 frames) down to 1.28s (gate@0.90, 9.5 frames) and 1.68s (gate@0.95, 15.9 frames).

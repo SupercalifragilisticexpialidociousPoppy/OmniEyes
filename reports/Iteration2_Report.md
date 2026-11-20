@@ -1,9 +1,9 @@
-# Task 4 — Iteration 2: Codifying H18 (Early-Layer Variance Gating)
+# Task 4 — Iteration 2: Codifying OmniEyes (Early-Layer Variance Gating)
 
 *File paths in this document are relative to the repository root.*
 
 ## 1. Idea selected and why
-We continue with **H18 (Early-Layer Variance Gating)**, ranked #1 in 2C2/Final Submission. H18 needs no fine-tuning: the vision-language model (VLM) stays frozen, and a gate built from the first few layers of the vision encoder drops video frames that look like the last frame kept.
+We continue with **OmniEyes** (early-layer variance gating; idea **H18** in the 2C2/Final Submission ranking, where it ranked #1). OmniEyes needs no fine-tuning: the vision-language model (VLM) stays frozen, and a gate built from the first few layers of the vision encoder drops video frames that look like the last frame kept.
 
 Iteration 1 built the pipeline and showed large latency savings. Its accuracy evaluation first failed: the LLM judge scored every answer 0, and was then replaced by a local NLI grader. Iteration 2 makes eight changes to the method, measurement and tooling (§2), runs a larger sweep (150 questions × 13 conditions), and re-validates the grader on fresh human labels.
 

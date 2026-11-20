@@ -1,4 +1,4 @@
-"""LLM-as-judge scoring for H18 (0–100 scale).
+"""LLM-as-judge scoring for OmniEyes (0–100 scale).
 Any OpenAI-compatible endpoint works (set JUDGE_BASE_URL, JUDGE_API_KEY, JUDGE_MODEL).
 Iteration 2 fixes: max_tokens=200, XML-structured output, raw_judge audit trail,
 fallback score=-1 for parse failures, rate-limiting."""
@@ -48,7 +48,7 @@ def parse_score(text):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="LLM-as-judge scoring for PhoStream H18 experiment")
+    ap = argparse.ArgumentParser(description="LLM-as-judge scoring for PhoStream OmniEyes experiment")
     ap.add_argument("input", help="results.jsonl from run.py")
     ap.add_argument("output", help="output judged JSONL path")
     ap.add_argument("--rps", type=float, default=1.5,

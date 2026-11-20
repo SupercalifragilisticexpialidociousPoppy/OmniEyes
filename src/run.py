@@ -1,4 +1,4 @@
-"""H18 iteration-2 experiment on PhoStream (Instant + Backward + Forward questions).
+"""OmniEyes iteration-2 experiment on PhoStream (Instant + Backward + Forward questions).
 
 For each QA: take the causal window [t-W, t] at 2 Hz, compute block-K gate
 features for every frame, then answer under these conditions:

@@ -1,11 +1,12 @@
-# H18: Early-Layer Variance Gating (iteration 2)
+# OmniEyes: Early-Layer Variance Gating (iteration 2)
 
-H18 tests whether a streaming video assistant can skip redundant frames cheaply. Every incoming frame goes through only the first K layers of the vision encoder (ViT). A frame is kept only if those early features differ enough from the last kept frame. Only the kept frames are sent to the vision-language model (Qwen2-VL-2B) to answer a question about the video.
+OmniEyes (idea H18 in the 2C2/Final Submission ranking) tests whether a streaming video assistant can skip redundant frames cheaply. Every incoming frame goes through only the first K layers of the vision encoder (ViT). A frame is kept only if those early features differ enough from the last kept frame. Only the kept frames are sent to the vision-language model (Qwen2-VL-2B) to answer a question about the video.
 
 Each question is answered under 13 conditions. The gate is compared with all frames (`full`), and with two cheap ways of picking the same number of frames: evenly spaced (`uniform`) and by pixel change (`pixel`). Answers are graded locally with an NLI model, with no API calls.
 
 - **Results and conclusions:** `reports/Iteration2_Report.md` (iteration 1: `reports/Iteration1_Report.md`)
 - **Known problems and suggested fixes (not yet implemented):** `reports/ITERATION2_REVIEW.md`
+- **Ideas for iteration 3 (moving to an Omni model with audio, better frame selection, and more):** `plans/`
 
 Hardware: the VLM runs need a **Colab T4** (16 GB). An RTX 3050 (4–8 GB) is too small for the 2B model with ~33 frames at fp16. Grading and analysis run on any machine (grading is much faster on a GPU).
 
@@ -14,8 +15,9 @@ Hardware: the VLM runs need a **Colab T4** (16 GB). An RTX 3050 (4–8 GB) is to
 ## Repository layout
 
 ```
-h18/
+OmniEyes/
 ├── README.md                     this file
+├── plans/                        working notes for iteration 3 (ideas, not implemented)
 ├── src/                          all code (run every command from the repository root)
 │   ├── run.py                    main experiment: answers each question under every condition
 │   ├── gate.py                   the early-layer gate and the three frame selectors
@@ -142,10 +144,11 @@ Builds a tiny random Qwen2-VL vision tower on CPU. It checks early exit, `resume
 
 ## Reproducing iteration 2 on Colab
 
-Upload this folder to Colab (e.g. zip it and unzip it there), then work from inside it:
+Clone the repository into Colab (or upload this folder as a zip), then work from inside it:
 
 ```bash
-%cd /content/h18
+!git clone https://github.com/<your-account>/OmniEyes.git   # use the repository's real URL
+%cd /content/OmniEyes
 ```
 
 **1. Install and download data**

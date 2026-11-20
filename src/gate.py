@@ -1,4 +1,4 @@
-"""H18 Early-Layer Variance Gating -- core gate.
+"""OmniEyes: early-layer variance gating -- core gate.
 
 Runs only the first K blocks of the VLM's vision encoder on a frame (early exit
 via a forward hook), returns block-K features, and selects frames whose
