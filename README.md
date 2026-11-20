@@ -1,6 +1,6 @@
-# OmniEyes: Early-Layer Variance Gating (iteration 2)
+# OmniEyes: Early-Layer Variance Gating (iteration 3)
 
-OmniEyes (idea H18 in the 2C2/Final Submission ranking) tests whether a streaming video assistant can skip redundant frames cheaply. Every incoming frame goes through only the first K layers of the vision encoder (ViT). A frame is kept only if those early features differ enough from the last kept frame. Only the kept frames are sent to the vision-language model (Qwen2-VL-2B) to answer a question about the video.
+OmniEyes (idea H18 in the 2C2/Final Submission ranking) tests whether a streaming video assistant can skip redundant frames cheaply. Every incoming frame goes through only the first K layers of the vision encoder (ViT). A frame is kept only if those early features differ enough from the last kept frame. Only the kept frames are sent to the model to answer a question about the video. Iterations 1–2 used Qwen2-VL-2B (video only). From iteration 3 the default is **Qwen2.5-Omni-3B**, which also hears the audio of the same window.
 
 Each question is answered under 13 conditions. The gate is compared with all frames (`full`), and with two cheap ways of picking the same number of frames: evenly spaced (`uniform`) and by pixel change (`pixel`). Answers are graded locally with an NLI model, with no API calls.
 
@@ -8,7 +8,7 @@ Each question is answered under 13 conditions. The gate is compared with all fra
 - **Known problems and suggested fixes (not yet implemented):** `reports/ITERATION2_REVIEW.md`
 - **Ideas for iteration 3 (moving to an Omni model with audio, better frame selection, and more):** `plans/`
 
-Hardware: the VLM runs need a **Colab T4** (16 GB). An RTX 3050 (4–8 GB) is too small for the 2B model with ~33 frames at fp16. Grading and analysis run on any machine (grading is much faster on a GPU).
+Hardware: the model runs need a Colab GPU: a **T4** (16 GB, fp16) works, and an **L4 or A100** (bf16) is better. An RTX 3050 (4–8 GB) is too small, and Colab's TPU runtime is not supported. Grading and analysis run on any machine (grading is much faster on a GPU).
 
 ---
 
@@ -39,11 +39,12 @@ OmniEyes/
 │   │   ├── judged_sem.jsonl      NLI-graded, base DeBERTa model
 │   │   ├── judged_sem_large.jsonl  NLI-graded, large DeBERTa model (used in the report)
 │   │   └── labels.csv            60 hand labels used to validate the grader
-│   └── iteration2/               K=3, τ ∈ {0.88, 0.90, 0.93, 0.95}, all tasks, timestamps in the prompt
-│       ├── results_v2_k3.jsonl   model answers, 150 questions × 13 conditions
-│       ├── judged_v2_k3.jsonl    the same rows, NLI-graded (large model)
-│       ├── labels_v2.csv         60 fresh hand labels for re-validating the grader
-│       └── tables/               CSV and text output of analyze.py (see tables/README.md)
+│   ├── iteration2/               K=3, τ ∈ {0.88, 0.90, 0.93, 0.95}, all tasks, timestamps in the prompt
+│   │   ├── results_v2_k3.jsonl   model answers, 150 questions × 13 conditions
+│   │   ├── judged_v2_k3.jsonl    the same rows, NLI-graded (large model)
+│   │   ├── labels_v2.csv         60 fresh hand labels for re-validating the grader
+│   │   └── tables/               CSV and text output of analyze.py (see tables/README.md)
+│   └── iteration3/               Qwen2.5-Omni-3B runs (copied in from Drive; see step 11)
 └── archive/                      superseded one-off files, kept for the record
 ```
 
@@ -58,7 +59,7 @@ For each question:
 1. Reads the 16 s of video before the question time at 2 frames per second (~33 frames).
 2. Runs every frame through the first K ViT blocks to get gate features.
 3. Builds the frame lists for every condition: `full`, and `gate@τ`, `uniform@τ`, `pixel@τ` for each τ.
-4. Asks Qwen2-VL-2B the question once per condition, with each kept frame's timestamp in the prompt.
+4. Asks the model the question once per condition, with each kept frame's timestamp in the prompt. With an Omni model, the audio of the same 16 s window is passed too. Audio is never gated and never extends past the question time.
 
 It writes one JSON line per (question, condition), containing:
 - the answer (`pred`) and the reference (`answer`);
@@ -81,6 +82,8 @@ Main options:
 | `--n` | 150 | number of questions (sampled with `--seed`, default 0) |
 | `--window` / `--fps` / `--size` | 16 s / 2 / 336 px | causal window length, sampling rate, frame size |
 | `--calibrate_only` | off | only log gate similarities; no LLM answers |
+| `--model` | Qwen/Qwen2.5-Omni-3B | Omni checkpoint (video + audio, Thinker only) or Qwen2-VL checkpoint (video only) |
+| `--no_audio` | off | with an Omni model, answer from frames alone (video-only ablation) |
 
 ### `src/gate.py`: the gate
 - **`EarlyLayerGate`** wraps the model's vision encoder.
@@ -93,6 +96,7 @@ Main options:
 ### `src/data.py`: data loading
 - `load_annotations()` reads the PhoStream JSON, flattens the nested `verified_responses`, and maps field names (question, answer, timestamp, task, video) from lists of candidate names.
 - `read_window()` returns the frames, as PIL images and NumPy arrays, plus their timestamps in seconds.
+- `read_audio_window()` returns the mono audio of the same causal window at the model's sampling rate (via ffmpeg), or nothing if the video has no audio track.
 - Run it directly to check that the annotation fields are detected: `python src/data.py <annotation json>`.
 
 ### `src/calibrate.py`: choosing τ
@@ -142,75 +146,141 @@ Builds a tiny random Qwen2-VL vision tower on CPU. It checks early exit, `resume
 
 ---
 
-## Reproducing iteration 2 on Colab
+## Running on Colab (iteration 3: Qwen2.5-Omni-3B with audio)
 
-Clone the repository into Colab (or upload this folder as a zip), then work from inside it:
+Run every command from the repository root. Lines starting with `!` or `%` go in Colab cells.
 
+### 0. Pick a GPU runtime
+**Runtime → Change runtime type → T4 GPU** (or L4 / A100 if your plan has them). The TPU runtime will not work: the code is written for NVIDIA GPUs.
+
+### 1. Get the code
 ```bash
-!git clone https://github.com/<your-account>/OmniEyes.git   # use the repository's real URL
+!git clone https://github.com/SupercalifragilisticexpialidociousPoppy/OmniEyes.git
 %cd /content/OmniEyes
 ```
+In a new session after a disconnect, run `%cd /content/OmniEyes` and `!git pull` instead of cloning again.
 
-**1. Install and download data**
+### 2. Install
 ```bash
-!pip -q install "transformers>=4.45" accelerate decord qwen-vl-utils sentence-transformers scipy
+!pip -q install -U transformers accelerate
+!pip -q install decord sentence-transformers scipy
+```
+- `transformers` must be recent: Qwen2.5-Omni support is new. If you see `KeyError: 'qwen2_5_omni'`, the upgrade didn't take effect. Use **Runtime → Restart session**, then continue from step 3.
+- `decord` reads video frames. `sentence-transformers` and `scipy` are only for grading (steps 8–10).
+- `ffmpeg`, used to read the audio, is already installed on Colab.
+
+### 3. Download the dataset
+```bash
 !git clone https://github.com/Lucky-Lance/PhoStream
-!huggingface-cli download lucky-lance/PhoStream phone_class_reencoded_2fps.tar.gz --repo-type dataset --local-dir videos
+!hf download lucky-lance/PhoStream phone_class_reencoded_2fps.tar.gz --repo-type dataset --local-dir videos
 !cd videos && tar -xf phone_class_reencoded_2fps.tar.gz
 ```
-Iteration 2 used questions from four archives: EgoBlind, phone_class, record_file and youtube_dl. Download the others from the same dataset page in the same way, if you want the same question set.
+On an older `huggingface_hub`, the command is `huggingface-cli download` instead of `hf download`. Iteration 2 also used the EgoBlind, record_file and youtube_dl archives. Download them the same way if you want the same question mix.
 
-**2. Check the setup**
+### 4. Check the setup
 ```bash
 !python src/data.py PhoStream/dataset/phostream_annotations.json
 !python src/test_gate_cpu.py
+!ffprobe -v error -select_streams a -show_entries stream=codec_name,sample_rate -of csv=p=0 "$(find videos -name '*.mp4' | head -1)"
+```
+- `data.py` should print the number of parsed questions and the task types.
+- `test_gate_cpu.py` should end with `ALL TESTS PASSED`.
+- `ffprobe` prints the audio track, e.g. `aac,44100`. **If it prints nothing, the videos have no audio.** Omni runs then fall back to video only, and every output row shows `audio_s = 0`.
+
+### 5. Save results to Google Drive
+Colab deletes `/content` when the session ends. Write run outputs straight to Drive, so an interrupted run can resume:
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+!mkdir -p /content/drive/MyDrive/OmniEyes/iteration3
 ```
 
-**3. Calibration (optional, ~10 min, no LLM calls)**
-```bash
-!python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos --n 30 --calibrate_only --out results/iteration2/calib.jsonl
-!python src/calibrate.py results/iteration2/calib.jsonl
-```
-Iteration 2 itself reused `results/iteration1/calib.jsonl`.
-
-**4. Main run (~1–2 h on a T4)**
+### 6. Smoke test: 3 questions, 1 τ
 ```bash
 !python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos \
-  --n 150 --k 3 --taus 0.88 0.90 0.93 0.95 --tasks instant backward forward \
-  --out results/iteration2/results_v2_k3.jsonl
+  --n 3 --taus 0.90 --tasks instant backward \
+  --out /content/drive/MyDrive/OmniEyes/iteration3/omni_smoke.jsonl
 ```
-Save the output to Drive. If the run is interrupted, re-run the same command.
+The first run downloads the model (about 10 GB). Check:
+1. The startup line says `model: Qwen/Qwen2.5-Omni-3B | audio: on, 16000 Hz`.
+2. It prints one `[i/3]` progress line per question.
+3. The answers look sensible:
+```python
+import json
+for l in open('/content/drive/MyDrive/OmniEyes/iteration3/omni_smoke.jsonl'):
+    r = json.loads(l); print(r['cond'], r['n_kept'], r['audio_s'], r['llm_latency_s'], '|', r['pred'][:100])
+```
+`audio_s` should be about 16 (seconds of audio used). Note the seconds per question: the full run (step 7) has 13 conditions per question instead of 4.
 
-**5. Grade (a few minutes on a T4)**
+### 7. Full run
 ```bash
-!python src/semantic_judge.py results/iteration2/results_v2_k3.jsonl results/iteration2/judged_v2_k3.jsonl \
+!python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos \
+  --n 150 --k 3 --taus 0.88 0.90 0.93 0.95 --tasks instant backward \
+  --out /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k3.jsonl
+```
+- If Colab disconnects, repeat steps 1–3 and 5, then re-run this exact command: finished (question, condition) pairs are skipped.
+- Forward questions are left out: their answer happens after the question time, outside the window the model sees (see `reports/Iteration2_Report.md` §5.4).
+- **Video-only ablation** (what audio adds), same questions:
+```bash
+!python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos \
+  --n 150 --k 3 --taus 0.88 0.90 0.93 0.95 --tasks instant backward --no_audio \
+  --out /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k3_noaudio.jsonl
+```
+
+### 8. Grade (a few minutes on a GPU)
+```bash
+!python src/semantic_judge.py /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k3.jsonl \
+  /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3.jsonl \
   --nli_model MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli
 ```
 
-**6. Analyse**
+### 9. Analyse
 ```bash
-# Headline results: instant + backward
-!python src/analyze.py results/iteration2/judged_v2_k3.jsonl --task instant backward --errors --csv results/iteration2/tables/instant_backward
-# Forward questions, reported separately
-!python src/analyze.py results/iteration2/judged_v2_k3.jsonl --task forward --errors --csv results/iteration2/tables/forward
+!mkdir -p /content/drive/MyDrive/OmniEyes/iteration3/tables
+!python src/analyze.py /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3.jsonl --task instant backward --errors \
+  --csv /content/drive/MyDrive/OmniEyes/iteration3/tables/instant_backward
 ```
-Forward questions ("tell me when X happens") ask about an event *after* the question time, outside the frames the model sees, and the grader is near chance on them. Keep them out of the headline numbers.
+How to read the output: `results/iteration2/tables/README.md` and `reports/Iteration2_Report.md` §5. A `*` after a paired difference means its 95% interval excludes 0.
 
-**7. Validate the grader (once per new results file)**
+### 10. Validate the grader on fresh labels
 ```bash
-!python src/semantic_judge.py results/iteration2/judged_v2_k3.jsonl --sample 60 results/iteration2/labels_v2.csv
-# download labels_v2.csv, fill "human" with 0 / 1 / 2, upload it back, then:
-!python src/semantic_judge.py results/iteration2/judged_v2_k3.jsonl --validate results/iteration2/labels_v2.csv
+!python src/semantic_judge.py /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3.jsonl --sample 60 /content/drive/MyDrive/OmniEyes/iteration3/labels_v3.csv
+# open labels_v3.csv from Drive, fill the "human" column with 0 / 1 / 2 (wrong / partial / correct), then:
+!python src/semantic_judge.py /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3.jsonl --validate /content/drive/MyDrive/OmniEyes/iteration3/labels_v3.csv
 ```
-Always label fresh rows for a new results file. Question IDs repeat between runs but the answers change, so old labels would be matched to the wrong answers without any error. Iteration 2 agreement: ρ = 0.47 (AUC 0.86) on instant + backward, near chance on forward.
+Never reuse labels from an earlier run: question IDs repeat, but the answers change.
 
-**Optional: gate depth ablation**
+### 11. Bring the results into the repository
+Copy the Drive folder's files into `results/iteration3/` in your local clone, then commit them.
+
+### Troubleshooting
+| Symptom | Likely cause and fix |
+|---|---|
+| `KeyError: 'qwen2_5_omni'` or `cannot import name 'Qwen2_5OmniThinkerForConditionalGeneration'` | `transformers` is too old: repeat step 2, then **Runtime → Restart session** |
+| `CUDA out of memory` | Try `--no_audio`, then a shorter `--window` (e.g. 8), then fewer τ values |
+| Empty, repeated or garbled answers | fp16 on a T4. On an L4 / A100, change `torch.float16` to `torch.bfloat16` in `load_model()` in `src/run.py` |
+| `ffmpeg not found` | `!apt-get -qq install ffmpeg`, or run with `--no_audio` |
+| `audio_s` is 0 in every row | the videos have no audio track (check with the `ffprobe` command in step 4) |
+| `AttributeError` mentioning `image_processor` or `visual` | the Omni processor or model is laid out differently than expected: copy the full error into an issue |
+
+### Reproducing iteration 2 (Qwen2-VL-2B, video only)
+Same steps, with `--model Qwen/Qwen2-VL-2B-Instruct` and the iteration 2 settings:
 ```bash
-!python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos --n 150 --k 1 --taus 0.90 0.95 --out results/iteration2/results_v2_k1.jsonl
-!python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos --n 150 --k 6 --taus 0.90 0.95 --out results/iteration2/results_v2_k6.jsonl
-# grade each file with step 5, then compare:
-!python src/analyze.py results/iteration2/judged_v2_k1.jsonl results/iteration2/judged_v2_k3.jsonl results/iteration2/judged_v2_k6.jsonl --task instant backward
+!python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos \
+  --model Qwen/Qwen2-VL-2B-Instruct \
+  --n 150 --k 3 --taus 0.88 0.90 0.93 0.95 --tasks instant backward forward \
+  --out results/iteration2/results_v2_k3.jsonl
 ```
+Then grade and analyse `results/iteration2/…` as in steps 8–9. Iteration 2's own outputs are already in `results/iteration2/`.
+
+### Optional: gate depth ablation
+```bash
+!python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos --n 150 --k 1 --taus 0.90 0.95 --tasks instant backward --out /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k1.jsonl
+!python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos --n 150 --k 8 --taus 0.90 0.95 --tasks instant backward --out /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k8.jsonl
+# grade each file as in step 8, then compare:
+!python src/analyze.py /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k1.jsonl /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3.jsonl /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k8.jsonl --task instant backward
+```
+K = 8 is the first block after a full-attention layer in Omni's vision encoder (see `plans/01_omni_migration.md`).
 
 ---
 

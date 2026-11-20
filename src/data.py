@@ -78,6 +78,20 @@ def read_window(video_path, t_end, window_s, fps=2.0, size=336):
     return frames, [np.asarray(f) for f in frames], ts.tolist()
 
 
+def read_audio_window(video_path, t_end, window_s, sr=16000):
+    """Return the mono float32 waveform of [t_end-window_s, t_end] at `sr` Hz, or None if
+    the video has no audio track. Causal: nothing after t_end. Needs ffmpeg on PATH."""
+    import subprocess
+    t0 = max(0.0, t_end - window_s)
+    cmd = ["ffmpeg", "-nostdin", "-loglevel", "error", "-ss", f"{t0:.3f}", "-t", f"{t_end - t0:.3f}",
+           "-i", video_path, "-vn", "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"]
+    res = subprocess.run(cmd, capture_output=True)
+    wav = np.frombuffer(res.stdout, dtype=np.float32)
+    if res.returncode != 0 or wav.size < sr // 10:  # no audio stream, or under 0.1 s decoded
+        return None
+    return wav.copy()
+
+
 if __name__ == "__main__":
     p = sys.argv[1]
     files = sorted(glob.glob(os.path.join(p, "**", "*.json"), recursive=True)) if os.path.isdir(p) else [p]

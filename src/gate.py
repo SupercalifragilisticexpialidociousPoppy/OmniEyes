@@ -27,9 +27,23 @@ def _vision_blocks(visual):
     raise AttributeError("Cannot locate vision transformer blocks")
 
 
+def _vision_encoder(model):
+    # Qwen2-VL: model.visual or model.model.visual; Qwen2.5-Omni Thinker: model.visual;
+    # full Qwen2.5-Omni: model.thinker.visual
+    for path in ("visual", "model.visual", "thinker.visual", "thinker.model.visual"):
+        mod = model
+        try:
+            for p in path.split("."):
+                mod = getattr(mod, p)
+            return mod
+        except AttributeError:
+            continue
+    raise AttributeError("Cannot locate the vision encoder; print(model) to find it")
+
+
 class EarlyLayerGate:
     def __init__(self, model, k=3, device="cuda"):
-        self.visual = model.visual if hasattr(model, "visual") else model.model.visual
+        self.visual = _vision_encoder(model)
         self.blocks = _vision_blocks(self.visual)
         self.n_blocks = len(self.blocks)
         assert 1 <= k <= self.n_blocks

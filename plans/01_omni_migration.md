@@ -1,5 +1,13 @@
 # 01 · Move to an Omni model with audio
 
+**Status: steps 1–4 written, not yet run on a GPU.**
+- `src/run.py` loads Qwen2.5-Omni-3B (Thinker only) by default.
+- `src/data.py` `read_audio_window()` reads the causal audio with ffmpeg.
+- The audio is passed as its own clip (`use_audio_in_video=False`).
+- `src/gate.py` finds the Thinker's vision encoder.
+
+Still open: time alignment (step 5), audio-triggered keeps (step 6), K = 8 test.
+
 ## Why
 - The proposal targets omni models. Qwen2-VL can't hear.
 - Several iteration 2 failures needed audio: an inner monologue, a narrator's explanation, a spoken "Can I hold you?".

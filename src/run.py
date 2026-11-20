@@ -1,4 +1,4 @@
-"""OmniEyes iteration-2 experiment on PhoStream (Instant + Backward + Forward questions).
+"""OmniEyes experiment on PhoStream (Instant + Backward + Forward questions).
 
 For each QA: take the causal window [t-W, t] at 2 Hz, compute block-K gate
 features for every frame, then answer under these conditions:
@@ -13,16 +13,23 @@ Iteration 2 updates:
   - Multi-frame averaging for baseline full_vit_ms
   - Expanded tasks: instant, backward, and forward
   - Granular resume-from-interrupt tracking (qid, cond)
+
+Iteration 3 updates:
+  - Default model is Qwen2.5-Omni-3B (Thinker only: text answers, no speech output).
+    Qwen2-VL checkpoints still work via --model.
+  - With an Omni model, the audio of the same causal window [t-W, t] is passed with the
+    frames (never gated, never after t). --no_audio turns it off for a video-only ablation.
 """
-import argparse, glob, json, os, random, time
+import argparse, glob, json, os, random, shutil, time
 import numpy as np
 import torch
-from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
+from transformers import AutoProcessor
 
 from gate import EarlyLayerGate, select_by_gate, select_uniform, select_by_pixel_diff
-from data import load_annotations, read_window
+from data import load_annotations, read_window, read_audio_window
 
 PROMPT = ("You are watching a live phone camera stream. The frames shown end at the current moment.\n"
+          "{audio_note}"
           "Frame timestamps (seconds): {ts}\n"
           "Answer the user's question concisely based only on what you have seen.\nQuestion: {q}")
 
@@ -41,8 +48,23 @@ def resolve_video(root, v):
     return hits[0] if hits else None
 
 
+def is_omni(model_name):
+    return "omni" in model_name.lower()
+
+
+def load_model(model_name):
+    """Load the VLM and its processor. Omni: Thinker only (text output, no Talker)."""
+    if is_omni(model_name):
+        from transformers import Qwen2_5OmniThinkerForConditionalGeneration as cls
+    else:
+        from transformers import Qwen2VLForConditionalGeneration as cls
+    model = cls.from_pretrained(model_name, torch_dtype=torch.float16, device_map="cuda").eval()
+    proc = AutoProcessor.from_pretrained(model_name)
+    return model, proc
+
+
 @torch.no_grad()
-def answer(model, proc, frames, question, timestamps=None, max_new=64):
+def answer(model, proc, frames, question, timestamps=None, audio=None, omni=False, max_new=64):
     fr = list(frames)
     ts = list(timestamps) if timestamps is not None else None
     if len(fr) % 2:                       # Qwen2-VL temporal patch = 2 frames
@@ -54,11 +76,24 @@ def answer(model, proc, frames, question, timestamps=None, max_new=64):
         ts_str = ", ".join(f"F{i}={t:.1f}s" for i, t in enumerate(ts[:len(frames)]))
     else:
         ts_str = "not available"
-    msgs = [{"role": "user", "content": [{"type": "video"}, {"type": "text", "text": PROMPT.format(q=question, ts=ts_str)}]}]
+    audio_note = "You also hear the audio of the same time span.\n" if audio is not None else ""
+    content = [{"type": "video"}]
+    if audio is not None:
+        content.append({"type": "audio"})
+    content.append({"type": "text", "text": PROMPT.format(q=question, ts=ts_str, audio_note=audio_note)})
+    msgs = [{"role": "user", "content": content}]
     text = proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
-    inp = proc(text=[text], videos=[vid], return_tensors="pt").to(model.device)
+    proc_kwargs, gen_kwargs = {}, {}
+    if audio is not None:
+        proc_kwargs["audio"] = [audio]
+    if omni:
+        # audio is passed as its own clip, not extracted from the video file
+        proc_kwargs["use_audio_in_video"] = False
+        gen_kwargs["use_audio_in_video"] = False
+    inp = proc(text=[text], videos=[vid], return_tensors="pt", padding=True, **proc_kwargs)
+    inp = inp.to(model.device).to(model.dtype)   # casts float inputs (pixels, audio features) to fp16
     torch.cuda.synchronize(); t0 = time.perf_counter()
-    out = model.generate(**inp, max_new_tokens=max_new, do_sample=False)
+    out = model.generate(**inp, max_new_tokens=max_new, do_sample=False, **gen_kwargs)
     torch.cuda.synchronize(); dt = time.perf_counter() - t0
     ans = proc.batch_decode(out[:, inp.input_ids.shape[1]:], skip_special_tokens=True)[0].strip()
     return ans, dt, int(inp.input_ids.shape[1])
@@ -69,7 +104,10 @@ def main():
     ap.add_argument("--ann", required=True)
     ap.add_argument("--video_root", required=True)
     ap.add_argument("--out", default="results.jsonl")
-    ap.add_argument("--model", default="Qwen/Qwen2-VL-2B-Instruct")
+    ap.add_argument("--model", default="Qwen/Qwen2.5-Omni-3B",
+                    help="Qwen2.5-Omni (video + audio) or Qwen2-VL (video only) checkpoint")
+    ap.add_argument("--no_audio", action="store_true",
+                    help="Omni only: answer from frames alone (video-only ablation)")
     ap.add_argument("--k", type=int, default=3)
     ap.add_argument("--taus", type=float, nargs="+", default=[0.88, 0.90, 0.93, 0.95])
     ap.add_argument("--window", type=float, default=16.0)
@@ -85,10 +123,15 @@ def main():
     random.Random(a.seed).shuffle(recs)
     print(f"{len(recs)} eligible QAs; running {min(a.n, len(recs))}")
 
-    model = Qwen2VLForConditionalGeneration.from_pretrained(a.model, torch_dtype=torch.float16, device_map="cuda").eval()
-    proc = AutoProcessor.from_pretrained(a.model)
+    omni = is_omni(a.model)
+    use_audio = omni and not a.no_audio
+    if use_audio and shutil.which("ffmpeg") is None:
+        raise SystemExit("ffmpeg not found: install it, or pass --no_audio for a video-only run")
+    model, proc = load_model(a.model)
+    audio_sr = proc.feature_extractor.sampling_rate if use_audio else None
     gate = EarlyLayerGate(model, k=a.k)
-    print(f"vision blocks: {gate.n_blocks}, gate at K={a.k}")
+    print(f"model: {a.model} | audio: {'on, %d Hz' % audio_sr if use_audio else 'off'} | "
+          f"vision blocks: {gate.n_blocks}, gate at K={a.k}")
 
     done_conds = set()
     cond_counts = {}
@@ -129,6 +172,8 @@ def main():
             print("skip", vp, e); continue
         if len(frames) < 2:
             continue
+        # causal audio for the same window; it is not gated (cheap, and dropping it loses speech)
+        audio = read_audio_window(vp, r["t"], a.window, audio_sr) if use_audio else None
 
         # --- gate pass: block-K features for every frame (this is the per-frame always-on cost)
         feats, gate_t, ip_cache = [], [], []
@@ -164,7 +209,8 @@ def main():
 
         base = dict(qid=qid, video=r["video"], t=r["t"], task=r["task"], question=r["question"],
                     answer=r["answer"], n_frames=N, k=a.k, gate_ms=g_mean * 1e3,
-                    full_vit_ms=full_t * 1e3, resume_ms=resume_t * 1e3)
+                    full_vit_ms=full_t * 1e3, resume_ms=resume_t * 1e3, model=a.model,
+                    audio_s=(len(audio) / audio_sr) if audio is not None else 0.0)
 
         if a.calibrate_only:
             if (qid, "calib") not in done_conds:
@@ -178,7 +224,7 @@ def main():
             if (qid, name) in done_conds:
                 continue
             pred, lat, ntok = answer(model, proc, [frames[i] for i in idx], r["question"],
-                                     timestamps=[frame_ts[i] for i in idx])
+                                     timestamps=[frame_ts[i] for i in idx], audio=audio, omni=omni)
             m = len(idx)
             if name.startswith("gate"):
                 # IDEAL cost: gate runs on all N; kept frames resume from block K
