@@ -28,4 +28,21 @@ assert kept == [0, 2], kept
 print("uniform", select_uniform(33, 5))
 fr = [np.zeros((4, 4, 3), np.uint8)] * 3 + [np.full((4, 4, 3), 255, np.uint8)]
 print("pixel", select_by_pixel_diff(fr, 2))
+
+# Iteration 3 options. Frames 0-3 near-identical, frame 4 different: the plain gate keeps [0, 4].
+same = [f1 + 0.001 * torch.randn_like(f1) for _ in range(4)]
+feats5 = same + [f3]
+assert select_by_gate(feats5, 0.95)[0] == [0, 4]
+# Last frame near-identical too: plain gate keeps only [0]; keep_current adds the newest frame
+feats5b = same + [f1 + 0.001 * torch.randn_like(f1)]
+assert select_by_gate(feats5b, 0.95)[0] == [0]
+assert select_by_gate(feats5b, 0.95, keep_current=True)[0] == [0, 4]
+# min_keep tops up to the budget, never beyond the number of frames
+assert len(select_by_gate(feats5b, 0.95, min_keep=3)[0]) == 3
+assert len(select_by_gate(feats5b, 0.95, min_keep=99)[0]) == 5
+# Baselines with keep_current always contain the newest frame
+assert select_uniform(33, 1, keep_current=True) == [32] and select_uniform(33, 1) == [0]
+assert select_by_pixel_diff(fr, 2, keep_current=True) == [0, 3]
+assert 0 in select_by_pixel_diff(fr * 3, 4, keep_current=True) and 11 in select_by_pixel_diff(fr * 3, 4, keep_current=True)
+print("keep_current / min_keep assertions OK")
 print("ALL TESTS PASSED")

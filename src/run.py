@@ -20,6 +20,9 @@ Iteration 3 updates:
     Qwen2-VL checkpoints still work via --model.
   - With an Omni model, the audio of the same causal window [t-W, t] is passed with the
     frames (never gated, never after t). --no_audio turns it off for a video-only ablation.
+  - Frame-selection fixes (off by default, so iterations 1-2 stay reproducible):
+    --keep_current always sends the newest frame (the question moment) in every condition;
+    --min_keep N tops the gate up to at least N frames, so the baselines get the same budget.
 """
 import argparse, glob, json, os, random, shutil, time
 import numpy as np
@@ -120,6 +123,10 @@ def main():
                     help="Qwen2.5-Omni (video + audio) or Qwen2-VL (video only) checkpoint")
     ap.add_argument("--no_audio", action="store_true",
                     help="Omni only: answer from frames alone (video-only ablation)")
+    ap.add_argument("--keep_current", action="store_true",
+                    help="always include the newest frame (the question moment) in every condition")
+    ap.add_argument("--min_keep", type=int, default=1,
+                    help="gate keeps at least this many frames (topped up by its own features)")
     ap.add_argument("--k", type=int, default=3)
     ap.add_argument("--taus", type=float, nargs="+", default=[0.88, 0.90, 0.93, 0.95])
     ap.add_argument("--window", type=float, default=16.0)
@@ -208,15 +215,16 @@ def main():
         conds = {"full": list(range(N))}
         sims_log = {}
         for tau in a.taus:
-            kept, sims = select_by_gate(feats, tau)
+            kept, sims = select_by_gate(feats, tau, min_keep=a.min_keep, keep_current=a.keep_current)
             sims_log[tau] = sims
             conds[f"gate@{tau}"] = kept
-            conds[f"uniform@{tau}"] = select_uniform(N, len(kept))
-            conds[f"pixel@{tau}"] = select_by_pixel_diff(frames_np, len(kept))
+            conds[f"uniform@{tau}"] = select_uniform(N, len(kept), keep_current=a.keep_current)
+            conds[f"pixel@{tau}"] = select_by_pixel_diff(frames_np, len(kept), keep_current=a.keep_current)
 
         base = dict(qid=qid, video=r["video"], t=r["t"], task=r["task"], question=r["question"],
                     answer=r["answer"], n_frames=N, k=a.k, gate_ms=g_mean * 1e3,
                     full_vit_ms=full_t * 1e3, resume_ms=resume_t * 1e3, model=a.model,
+                    keep_current=a.keep_current, min_keep=a.min_keep,
                     audio_s=(len(audio) / audio_sr) if audio is not None else 0.0)
 
         if a.calibrate_only:

@@ -1,5 +1,10 @@
 # 02 · Which frames the gate keeps and sends
 
+**Status: ideas 2 and 3 implemented (iteration 3), not yet evaluated.**
+- `--keep_current` always sends the newest frame, in every condition.
+- `--min_keep N` tops the gate up to N frames by farthest-point selection on its block-K features. The baselines get the same budget.
+- Both are off by default, so iterations 1–2 stay reproducible. See `select_by_gate()` in `src/gate.py`.
+
 ## Problems seen in iteration 2
 - `select_by_gate` (`src/gate.py`) always keeps **frame 0, the oldest frame** (16 s before the question). It keeps a later frame only if it differs from the last kept one by more than τ.
 - In 30–40% of instant + backward questions the gate kept **only frame 0**. The current frame (the question moment) was kept in just 3–16 of 76 questions.

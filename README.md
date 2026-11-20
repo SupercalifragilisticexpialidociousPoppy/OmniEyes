@@ -84,14 +84,18 @@ Main options:
 | `--calibrate_only` | off | only log gate similarities; no LLM answers |
 | `--model` | Qwen/Qwen2.5-Omni-3B | Omni checkpoint (video + audio, Thinker only) or Qwen2-VL checkpoint (video only) |
 | `--no_audio` | off | with an Omni model, answer from frames alone (video-only ablation) |
+| `--keep_current` | off | always send the newest frame (the question moment), in every condition |
+| `--min_keep` | 1 | the gate keeps at least this many frames; uniform and pixel get the same budget |
 
 ### `src/gate.py`: the gate
 - **`EarlyLayerGate`** wraps the model's vision encoder.
   - `early_features()` runs only blocks 1..K, stopping early with a hook.
   - `full_time()` times a complete ViT pass.
   - `split_time()` times one real full pass and marks the clock when block K finishes. The part after block K (`resume_ms`) is the "ideal" cost of a kept frame that could continue from its block-K features. Generation itself still encodes kept frames in full.
-- **`select_by_gate(feats, τ)`** keeps frame 0, then every frame whose mean per-token cosine similarity to the last kept frame is below τ.
-- **`select_uniform`** and **`select_by_pixel_diff`** are the baselines. They pick the same number of frames, evenly spaced or by largest pixel change.
+- **`select_by_gate(feats, τ)`** keeps frame 0, then every frame whose mean per-token cosine similarity to the last kept frame is below τ. Two iteration 3 options, both off by default so iterations 1–2 stay reproducible:
+  - `keep_current` also keeps the newest frame (the question moment). Without it, the gate often sends only the oldest frame, from 16 s before the question.
+  - `min_keep` tops the selection up to a minimum number of frames. It adds the frames least similar to anything already kept, using the gate's own block-K features. With only 1–2 frames, gate, uniform and pixel are forced onto the same frames, and the comparison is meaningless.
+- **`select_uniform`** and **`select_by_pixel_diff`** are the baselines. They pick the same number of frames, evenly spaced or by largest pixel change. With `keep_current`, they also always include the newest frame.
 
 ### `src/data.py`: data loading
 - `load_annotations()` reads the PhoStream JSON, flattens the nested `verified_responses`, and maps field names (question, answer, timestamp, task, video) from lists of candidate names.
@@ -216,14 +220,18 @@ for l in open('/content/drive/MyDrive/OmniEyes/iteration3/omni_smoke.jsonl'):
 ```bash
 !python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos \
   --n 150 --k 3 --taus 0.88 0.90 0.93 0.95 --tasks instant backward \
+  --keep_current --min_keep 4 \
   --out /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k3.jsonl
 ```
-- If Colab disconnects, repeat steps 1–3 and 5, then re-run this exact command: finished (question, condition) pairs are skipped.
+- `--keep_current --min_keep 4` turn on the frame-selection fixes: every condition sees the question moment, and each method gets at least 4 frames to choose. Every output row records both settings.
+- Roughly 20 s per question on a T4, so about 50 minutes for 150 questions (estimated from the smoke test).
+- If Colab disconnects, repeat steps 1–3 and 5, then re-run this exact command: finished (question, condition) pairs are skipped. Use a new `--out` file whenever you change any option, so rows made with different settings never end up in the same file.
 - Forward questions are left out: their answer happens after the question time, outside the window the model sees (see `reports/Iteration2_Report.md` §5.4).
 - **Video-only ablation** (what audio adds), same questions:
 ```bash
 !python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos \
   --n 150 --k 3 --taus 0.88 0.90 0.93 0.95 --tasks instant backward --no_audio \
+  --keep_current --min_keep 4 \
   --out /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k3_noaudio.jsonl
 ```
 

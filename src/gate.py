@@ -115,33 +115,67 @@ def token_cosine(a, b):
     return float((a * b).sum(-1).mean())
 
 
-def select_by_gate(feats, tau):
+def select_by_gate(feats, tau, min_keep=1, keep_current=False):
     """Greedy streaming selection. feats: list of [T,D] tensors in time order.
-    Frame 0 always kept. Frame i kept iff cos(feat_i, feat_last_kept) < tau."""
+
+    Frame 0 is always kept. Frame i is kept iff cos(feat_i, feat_last_kept) < tau.
+    Iteration 3 options (the defaults reproduce iterations 1-2 exactly):
+      keep_current  also keep the newest frame (the question moment), whatever the gate says
+      min_keep      if fewer frames are kept, top up with the frames least similar to any kept
+                    frame (farthest-point selection on the gate's own block-K features)
+    Returns (kept indices sorted, sims) where sims are the greedy pass's similarities to the
+    last kept frame (unchanged by the options, so calibration logs stay comparable).
+    """
+    n = len(feats)
     kept, sims = [0], [1.0]
     ref = feats[0]
-    for i in range(1, len(feats)):
+    for i in range(1, n):
         s = token_cosine(feats[i], ref)
         sims.append(s)
         if s < tau:
             kept.append(i)
             ref = feats[i]
-    return kept, sims
+    if keep_current and n - 1 not in kept:
+        kept.append(n - 1)
+    target = min(min_keep, n)
+    if len(kept) < target:
+        # closest[i] = highest similarity of frame i to any kept frame; add the frame for which
+        # it is lowest (the most different from everything kept), then update.
+        closest = {i: max(token_cosine(feats[i], feats[j]) for j in kept) for i in range(n) if i not in kept}
+        while len(kept) < target:
+            best = min(closest, key=closest.get)
+            kept.append(best)
+            del closest[best]
+            for i in closest:
+                closest[i] = max(closest[i], token_cosine(feats[i], feats[best]))
+    return sorted(kept), sims
 
 
-def select_by_pixel_diff(frames_np, n_keep):
-    """Cheap baseline gate matched to n_keep frames: frame 0 + the (n_keep-1) frames
-    with the largest mean abs pixel change vs the previous frame."""
-    if n_keep <= 1 or len(frames_np) <= 1:
+def select_by_pixel_diff(frames_np, n_keep, keep_current=False):
+    """Cheap baseline gate matched to n_keep frames: frame 0 (and, with keep_current, the newest
+    frame) + the frames with the largest mean abs pixel change vs the previous frame."""
+    n = len(frames_np)
+    base = [0, n - 1] if keep_current and n > 1 else [0]
+    n_keep = max(len(base), min(n_keep, n))
+    if n <= 1:
         return [0]
     f = np.stack([x.astype(np.float32) / 255.0 for x in frames_np])
     diff = np.abs(f[1:] - f[:-1]).mean(axis=(1, 2, 3))
-    top = (np.argsort(-diff)[: n_keep - 1] + 1).tolist()
-    return sorted(set([0] + top))
+    order = (np.argsort(-diff) + 1).tolist()   # frame indices, biggest change first
+    picked = list(base)
+    for i in order:
+        if len(picked) >= n_keep:
+            break
+        if i not in picked:
+            picked.append(i)
+    return sorted(picked)
 
 
-def select_uniform(n_total, n_keep):
-    """Uniform subsampling baseline matched to n_keep frames (always includes last frame)."""
+def select_uniform(n_total, n_keep, keep_current=False):
+    """Uniform subsampling baseline matched to n_keep frames. For 2+ frames it always spans
+    oldest to newest; for a single frame it returns the oldest (or, with keep_current, the newest)."""
     n_keep = max(1, min(n_keep, n_total))
+    if n_keep == 1:
+        return [n_total - 1] if keep_current else [0]
     idx = np.linspace(0, n_total - 1, n_keep).round().astype(int)
     return sorted(set(idx.tolist()))
