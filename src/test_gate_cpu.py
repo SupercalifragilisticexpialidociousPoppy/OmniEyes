@@ -1,4 +1,4 @@
-"""CPU smoke test: tiny random Qwen2-VL vision tower, checks early exit, resume, and selection logic."""
+"""CPU smoke test: tiny random Qwen2-VL vision tower, checks early exit, split timing, and selection logic."""
 import numpy as np, torch
 from transformers import Qwen2VLConfig, Qwen2VLForConditionalGeneration
 from gate import EarlyLayerGate, select_by_gate, select_uniform, select_by_pixel_diff
@@ -16,13 +16,11 @@ f2, _ = g.early_features(pv + 0.01 * torch.randn_like(pv), grid)
 f3, _ = g.early_features(torch.randn_like(pv), grid)
 print("feat", f1.shape, "gate s", round(t1, 4), "full s", round(g.full_time(pv, grid), 4))
 
-# Test resume_from_k
-resumed_out, t_resume = g.resume_from_k(f1, grid)
-print("resumed shape", resumed_out.shape, "resume s", round(t_resume, 4))
-full_out = g.visual(pv, grid_thw=grid)
-print("full_out shape", full_out.shape)
-assert resumed_out.shape == full_out.shape, f"Shape mismatch: {resumed_out.shape} vs {full_out.shape}"
-print("resume_from_k assertion OK")
+# Split timing: one real full pass, clock marked when block K finishes
+t_full, t_resume = g.split_time(pv, grid)
+print("split: full s", round(t_full, 4), "resume s", round(t_resume, 4))
+assert 0 < t_resume < t_full, (t_full, t_resume)
+print("split_time assertion OK")
 
 kept, sims = select_by_gate([f1, f2, f3], 0.95)
 print("sims", [round(s, 3) for s in sims], "kept", kept)

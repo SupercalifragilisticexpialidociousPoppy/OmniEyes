@@ -81,67 +81,31 @@ class EarlyLayerGate:
         return time.perf_counter() - t0
 
     @torch.no_grad()
-    def resume_from_k(self, early_feats, grid_thw):
-        """Run blocks K..N + merger on pre-computed block-K features.
-        
-        Args:
-            early_feats: tensor from early_features(), e.g. on CPU float32
-            grid_thw: tensor [[t, h, w]]
-        
-        Returns:
-            (final_embeddings, seconds)
+    def split_time(self, pixel_values, grid_thw):
+        """Time one full vision pass, split at block K.
+
+        Returns (full_seconds, resume_seconds), where resume_seconds is the time from the
+        end of block K to the end of the pass (blocks K+1..N plus the merger): the "ideal"
+        cost of a kept frame that could continue from its block-K features.
+        A forward hook marks the clock when block K finishes, so the model runs its own
+        code path (position embeddings, window attention) unchanged in any transformers version.
         """
-        import inspect
-        import torch.nn.functional as F
+        marks = {}
 
-        hidden = early_feats.to(self.device, self.dtype)
-        grid_thw = grid_thw.to(self.device)
+        def hook(_m, _i, _out):
+            self._sync()
+            marks["k"] = time.perf_counter()
 
-        # Prepare kwargs matching block signature
-        block_kwargs = {}
-        sig = inspect.signature(self.blocks[0].forward)
-
-        rotary_pos_emb = None
-        if hasattr(self.visual, "rot_pos_emb") and callable(self.visual.rot_pos_emb):
-            rotary_pos_emb = self.visual.rot_pos_emb(grid_thw)
-
-        cu_seqlens = None
-        if "cu_seqlens" in sig.parameters:
-            cu_seqlens = torch.repeat_interleave(
-                grid_thw[:, 1] * grid_thw[:, 2], grid_thw[:, 0]
-            ).cumsum(dim=0, dtype=torch.int32)
-            cu_seqlens = F.pad(cu_seqlens, (1, 0), "constant", 0)
-            block_kwargs["cu_seqlens"] = cu_seqlens
-
-        if "rotary_pos_emb" in sig.parameters and rotary_pos_emb is not None:
-            block_kwargs["rotary_pos_emb"] = rotary_pos_emb
-
-        if "max_seqlen" in sig.parameters and cu_seqlens is not None:
-            if hasattr(self.visual, "compute_attn_mask_seqlen"):
-                max_seqlen, seqlens = self.visual.compute_attn_mask_seqlen(cu_seqlens)
-            else:
-                max_seqlen = int(cu_seqlens.diff().max().item())
-                seqlens = cu_seqlens.diff().tolist()
-            block_kwargs["max_seqlen"] = max_seqlen
-            if "seqlens" in sig.parameters:
-                block_kwargs["seqlens"] = seqlens
-
-        self._sync(); t0 = time.perf_counter()
-
-        # Run remaining blocks (K through N-1)
-        for blk in self.blocks[self.k:]:
-            out = blk(hidden, **block_kwargs)
-            hidden = out[0] if isinstance(out, tuple) else out
-
-        # Run merger if present
-        merger = getattr(self.visual, "merger", None)
-        if merger is not None:
-            final = merger(hidden)
-        else:
-            final = hidden
-
-        self._sync(); dt = time.perf_counter() - t0
-        return final.float().cpu(), dt
+        h = self.blocks[self.k - 1].register_forward_hook(hook)
+        try:
+            self._sync(); t0 = time.perf_counter()
+            self.visual(pixel_values.to(self.device, self.dtype), grid_thw=grid_thw.to(self.device))
+            self._sync(); t1 = time.perf_counter()
+        finally:
+            h.remove()
+        if "k" not in marks:
+            raise RuntimeError("block-K timing hook did not fire")
+        return t1 - t0, t1 - marks["k"]
 
 
 def token_cosine(a, b):

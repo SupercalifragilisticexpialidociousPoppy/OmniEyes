@@ -89,7 +89,7 @@ Main options:
 - **`EarlyLayerGate`** wraps the model's vision encoder.
   - `early_features()` runs only blocks 1..K, stopping early with a hook.
   - `full_time()` times a complete ViT pass.
-  - `resume_from_k()` runs the remaining blocks plus the merger on stored block-K features. It is used to time the "ideal" cost; generation itself still encodes kept frames in full.
+  - `split_time()` times one real full pass and marks the clock when block K finishes. The part after block K (`resume_ms`) is the "ideal" cost of a kept frame that could continue from its block-K features. Generation itself still encodes kept frames in full.
 - **`select_by_gate(feats, τ)`** keeps frame 0, then every frame whose mean per-token cosine similarity to the last kept frame is below τ.
 - **`select_uniform`** and **`select_by_pixel_diff`** are the baselines. They pick the same number of frames, evenly spaced or by largest pixel change.
 
@@ -142,7 +142,7 @@ Options:
 Grades answers 0–100 with any OpenAI-compatible chat API (`JUDGE_BASE_URL`, `JUDGE_API_KEY`, `JUDGE_MODEL`). It rate-limits requests (`--rps`) and marks unparseable replies as `-1`. It was replaced by `semantic_judge.py` after the iteration 1 failure and API rate limits. If you use it: `JUDGE_MODEL` must be a chat model, not a speech model such as `whisper-*`. Keep keys in Colab's Secrets panel, never in the notebook.
 
 ### `src/test_gate_cpu.py`: smoke test
-Builds a tiny random Qwen2-VL vision tower on CPU. It checks early exit, `resume_from_k` (output shape only), and that the three selectors pick the expected frames. Runs in seconds without a GPU.
+Builds a tiny random Qwen2-VL vision tower on CPU. It checks early exit, the split timing (the part after block K must be shorter than the full pass), and that the three selectors pick the expected frames. Runs in seconds without a GPU.
 
 ---
 

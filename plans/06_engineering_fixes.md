@@ -1,6 +1,8 @@
 # 06 · Engineering fixes (cheap, do first)
 
 ## 1. `resume_from_k` crash and the fake 50 ms
+**Status: resolved for timing in iteration 3.** `resume_from_k()` crashed again on Qwen2.5-Omni (`position_embeddings` was None). It was replaced by `EarlyLayerGate.split_time()`: a timing hook marks the end of block K inside a real full pass, so `resume_ms` is measured with the model's own code path, in any `transformers` version. Items 2–3 below still apply if resumed features are ever fed to generation.
+
 - **What happened:** `resume_from_k()` (`src/gate.py`) crashed on the GPU. Newer `transformers` versions pass M-RoPE position information to the vision blocks in a different format: precomputed `position_embeddings` (cos, sin) instead of `rotary_pos_emb`. The Colab copy of the code caught the error and **wrote 0.05 s**, so every iteration 2 row has `resume_ms = 50.0`. The "ideal" ViT cost is therefore fake.
 - **The repository does not contain the fix or the fallback.** `src/gate.py` still passes `rotary_pos_emb`, and `src/run.py` has no 50 ms fallback. The code in the repo is not the code that produced `results/iteration2/results_v2_k3.jsonl`.
 - **To do:**

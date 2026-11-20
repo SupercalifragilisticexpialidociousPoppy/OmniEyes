@@ -11,7 +11,7 @@ The project goal, from the proposal: make **omni models** (video + audio) unders
 | `03_resolution.md` | Gate at low resolution, encode kept frames at high resolution | 3 |
 | `04_feeding_frames.md` | How kept frames reach the language model: real time positions, frame pairing, prompt | 4 |
 | `05_evaluation.md` | Baselines (vanilla Omni), grader, forward questions, sample size, labelling | runs alongside |
-| `06_engineering_fixes.md` | `resume_from_k` crash, fake 50 ms, code/results mismatch, small code bugs | do first (cheap) |
+| `06_engineering_fixes.md` | `resume_from_k` crash (timing fixed in iteration 3), fake 50 ms, code/results mismatch, small code bugs | do first (cheap) |
 
 Background for every item: `reports/Iteration2_Report.md` (results and drawbacks) and `reports/ITERATION2_REVIEW.md` (code review).
 

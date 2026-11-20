@@ -10,6 +10,7 @@ features for every frame, then answer under these conditions:
 Iteration 2 updates:
   - Timestamp prompting (per-frame time injection into the LLM prompt)
   - Vision feature resumption timing (resume_ms) and ideal vs actual vit_ms accounting
+    (iteration 3: resume_ms is measured inside a real full pass, split at block K)
   - Multi-frame averaging for baseline full_vit_ms
   - Expanded tasks: instant, backward, and forward
   - Granular resume-from-interrupt tracking (qid, cond)
@@ -183,17 +184,12 @@ def main():
             feats.append(ft); gate_t.append(dt)
             ip_cache.append(ip)
 
-        # Average full ViT timing across up to 3 frames (fixing single-frame measurement bug)
+        # Full ViT time and the "resume" part of it (blocks K+1..N + merger), averaged over
+        # up to 3 frames. Both come from one real pass, split at block K by a timing hook.
         sample_ips = ip_cache[:min(3, len(ip_cache))]
-        full_times = [gate.full_time(sip["pixel_values"], sip["image_grid_thw"]) for sip in sample_ips]
-        full_t = float(np.mean(full_times))
-
-        # Time the resume path (blocks K..N + merger) for cost accounting
-        resume_times = []
-        for sip, sfeat in zip(sample_ips, feats[:len(sample_ips)]):
-            _, rt = gate.resume_from_k(sfeat, sip["image_grid_thw"])
-            resume_times.append(rt)
-        resume_t = float(np.mean(resume_times))
+        splits = [gate.split_time(sip["pixel_values"], sip["image_grid_thw"]) for sip in sample_ips]
+        full_t = float(np.mean([f for f, _ in splits]))
+        resume_t = float(np.mean([r for _, r in splits]))
 
         g_mean = float(np.mean(gate_t[1:] if len(gate_t) > 1 else gate_t))
         N = len(frames)
