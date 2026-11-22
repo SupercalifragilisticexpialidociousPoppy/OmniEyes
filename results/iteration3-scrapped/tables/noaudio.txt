@@ -1,0 +1,338 @@
+Metric: ent_con (x100)
+condition             n   score  frames   ViT ms  ViT %ideal  ViT %act  tokens  LLM s
+full                150   -30.1    32.1     3079        100%      100%    2815   3.11
+gate@0.88           150   -45.0     4.4      814         26%       28%     456   1.16
+pixel@0.88          150   -45.7     4.4      422         14%       14%     456   1.15
+uniform@0.88        150   -43.1     4.4      422         14%       14%     456   1.17
+gate@0.9            150   -45.1     4.5      823         27%       29%     468   1.17
+pixel@0.9           150   -45.7     4.5      432         14%       14%     468   1.18
+uniform@0.9         150   -42.6     4.5      432         14%       14%     468   1.17
+gate@0.93           150   -41.3     4.9      859         28%       30%     505   1.19
+pixel@0.93          150   -42.7     4.9      474         15%       15%     505   1.19
+uniform@0.93        150   -41.8     4.9      474         15%       15%     505   1.19
+gate@0.95           150   -42.0     5.3      888         29%       31%     536   1.23
+pixel@0.95          150   -41.8     5.3      507         16%       16%     536   1.22
+uniform@0.95        150   -42.9     5.3      507         16%       16%     536   1.23
+
+Score by task (excluding parse failures):
+  full              backward=-21.7(n=47)  instant=-33.9(n=103)
+  gate@0.88         backward=-22.1(n=47)  instant=-55.4(n=103)
+  gate@0.9          backward=-22.1(n=47)  instant=-55.7(n=103)
+  gate@0.93         backward=-20.7(n=47)  instant=-50.6(n=103)
+  gate@0.95         backward=-18.7(n=47)  instant=-52.7(n=103)
+  pixel@0.88        backward=-21.1(n=47)  instant=-57.0(n=103)
+  pixel@0.9         backward=-21.1(n=47)  instant=-57.0(n=103)
+  pixel@0.93        backward=-19.8(n=47)  instant=-53.1(n=103)
+  pixel@0.95        backward=-18.4(n=47)  instant=-52.6(n=103)
+  uniform@0.88      backward=-18.7(n=47)  instant=-54.2(n=103)
+  uniform@0.9       backward=-16.6(n=47)  instant=-54.5(n=103)
+  uniform@0.93      backward=-16.6(n=47)  instant=-53.3(n=103)
+  uniform@0.95      backward=-16.6(n=47)  instant=-54.9(n=103)
+
+Paired diff (gate - baseline), 95% bootstrap CI   (* = CI excludes 0):
+  gate@0.88          vs uniform@0.88         -1.9 [  -7.5,   +3.9] n=150   
+  gate@0.88          vs pixel@0.88           +0.8 [  -2.3,   +4.4] n=150   
+  gate@0.88          vs full                -14.9 [ -24.6,   -5.9] n=150  *
+  gate@0.9           vs uniform@0.9          -2.5 [  -8.1,   +3.0] n=150   
+  gate@0.9           vs pixel@0.9            +0.6 [  -2.3,   +4.1] n=150   
+  gate@0.9           vs full                -15.1 [ -24.4,   -5.8] n=150  *
+  gate@0.93          vs uniform@0.93         +0.5 [  -5.9,   +6.3] n=150   
+  gate@0.93          vs pixel@0.93           +1.4 [  -1.6,   +5.0] n=150   
+  gate@0.93          vs full                -11.2 [ -20.6,   -1.9] n=150  *
+  gate@0.95          vs uniform@0.95         +0.8 [  -4.7,   +6.5] n=150   
+  gate@0.95          vs pixel@0.95           -0.2 [  -2.4,   +1.8] n=150   
+  gate@0.95          vs full                -12.0 [ -20.9,   -3.2] n=150  *
+
+=== ERROR ANALYSIS: 10 WORST DROPS VS FULL ===
+
+--- Condition gate@0.88 vs full (showing largest drops) ---
+  Delta: -199.8 (Gate: -99.9 | Full: 99.9) [Task: instant]
+  Question: How is he capturing the document?
+  Ref:      He is using the tablet's camera to scan a physical paper document placed on the floor. A yellow overlay on the screen indicates that the software is automatically detecting the edges of the paper to crop and capture it.
+  Full:     He is using a camera to capture the document.
+  Gate:     He is using a screen capture tool to record the document.
+  Frames:   9/33 kept: [0, 1, 3, 8, 13, 16, 21, 22, 32]
+
+  Delta: -198.7 (Gate: -99.9 | Full: 98.8) [Task: instant]
+  Question: What is the dominant color of the cats shown in the displayed search results?
+  Ref:      After the user inputs the search term, the gallery populates with a grid of images that predominantly feature a white cat.
+  Full:     The cats in the search results are predominantly white.
+  Gate:     The cats shown in the displayed search results are black.
+  Frames:   9/33 kept: [0, 3, 6, 11, 12, 22, 28, 31, 32]
+
+  Delta: -198.2 (Gate: -99.8 | Full: 98.4) [Task: instant]
+  Question: What visual symbol is displayed on the final screen to represent the accomplishment of the challenge?
+  Ref:      A large orange trophy icon appears in the center of the screen, accompanied by the text "WORKOUT COMPLETED", symbolically rewarding the user for finishing the session.
+  Full:     The final screen displays a trophy as the visual symbol representing the accomplishment of the challenge.
+  Gate:     The final screen displays a checkmark symbol to represent the accomplishment of the challenge.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -178.5 (Gate: -95.0 | Full: 83.4) [Task: backward]
+  Question: Based on the activities of the women near the window, what appears to be the nature of their work?
+  Ref:      They appear to be content creators or social media managers, consistent with the on-screen text identifying a "content creation team." One woman is seen dancing near the window, while another is seated filming herself applying makeup using a smartphone on a tripod. These activities indicate their work involves producing video content for the brand.
+  Full:     The women near the window appear to be engaged in a creative or artistic activity, possibly related to fashion or design.
+  Gate:     Based on the activities near the window, it appears that the women are engaged in a task that involves handling or arranging objects, possibly in a retail or office setting.
+  Frames:   5/33 kept: [0, 7, 21, 22, 32]
+
+  Delta: -175.8 (Gate: -77.1 | Full: 98.7) [Task: instant]
+  Question: During the final arrangement, where does she place the first invisible bookmark icon?
+  Ref:      She drags the first invisible bookmark icon to the top-left corner of the available app grid area. This acts as a spacer to push the subsequent real apps into the desired central position.
+  Full:     The first invisible bookmark icon is placed on the top of the screen.
+  Gate:     She places the first invisible bookmark icon on the tab.
+  Frames:   4/33 kept: [0, 30, 31, 32]
+
+  Delta: -163.3 (Gate: -100.0 | Full: 63.3) [Task: instant]
+  Question: What immediate physical reaction does the host show after taking a bite of the egg with toppings?
+  Ref:      Immediately after eating a spoonful of the egg covered in the red chili topping, she begins to cough and covers her mouth with her hand. She grimaces, exhales sharply, and verbally exclaims about the spiciness ("Ang hang!"), indicating she is overwhelmed by the heat.
+  Full:     The host chews the egg with toppings.
+  Gate:     The host shows no immediate physical reaction after taking a bite of the egg with toppings.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -148.8 (Gate: -48.9 | Full: 99.9) [Task: instant]
+  Question: Regarding the goat on the robot vacuum, what does it do when it finally gets off the device?
+  Ref:      After riding the robot vacuum for a few moments, the goat jumps off the robot vacuum.
+  Full:     The goat on the robot vacuum jumps off the device.
+  Gate:     The goat on the robot vacuum does not appear in the frames provided.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -141.9 (Gate: -99.8 | Full: 42.0) [Task: instant]
+  Question: What is the woman using to determine the quantity of the yellow ingredient she just cut?
+  Ref:      She is using a digital scale connected to a smartphone app. After placing the container with the butter on the scale, the phone's voice assistant audibly reads out the weight as "120", allowing her to measure precise amounts without seeing the display.
+  Full:     The woman is using a scale to determine the quantity of the yellow ingredient she just cut.
+  Gate:     The woman is using a measuring cup to determine the quantity of the yellow ingredient she just cut.
+  Frames:   4/33 kept: [0, 19, 20, 32]
+
+  Delta: -138.9 (Gate: -39.3 | Full: 99.6) [Task: instant]
+  Question: What happens when the user attempts to invoke the chatbot via Siri using a Chinese text prompt?
+  Ref:      The user types a prompt in Chinese ending with "ChatGPT" into the Siri interface. Instead of activating the chatbot to write the letter, the system simply displays a list of web search results related to the query, indicating a failure to trigger the AI feature.
+  Full:     When the user tries to activate the chatbot using a Chinese text prompt through Siri, the chatbot does not respond.
+  Gate:     The chatbot responds with a message in Chinese.
+  Frames:   4/33 kept: [0, 7, 8, 32]
+
+  Delta: -131.2 (Gate: -99.9 | Full: 31.3) [Task: instant]
+  Question: Looking at the map interface, what is the plane's flight path relative to "Z City"?
+  Ref:      The flight path, indicated by a dashed line, passes to the southeast of "Z City". On the map, "Z City" is located in the upper left coastal region, and the plane's trajectory cuts diagonally across the map, staying relatively close to this landmark.
+  Full:     The plane is flying over Z City.
+  Gate:     The plane's flight path is directly above Z City.
+  Frames:   4/33 kept: [0, 16, 20, 32]
+
+
+--- Condition gate@0.9 vs full (showing largest drops) ---
+  Delta: -199.8 (Gate: -99.9 | Full: 99.9) [Task: instant]
+  Question: How is he capturing the document?
+  Ref:      He is using the tablet's camera to scan a physical paper document placed on the floor. A yellow overlay on the screen indicates that the software is automatically detecting the edges of the paper to crop and capture it.
+  Full:     He is using a camera to capture the document.
+  Gate:     He is using a screen capture tool to record the document.
+  Frames:   9/33 kept: [0, 1, 3, 8, 13, 16, 21, 22, 32]
+
+  Delta: -198.7 (Gate: -99.9 | Full: 98.8) [Task: instant]
+  Question: What is the dominant color of the cats shown in the displayed search results?
+  Ref:      After the user inputs the search term, the gallery populates with a grid of images that predominantly feature a white cat.
+  Full:     The cats in the search results are predominantly white.
+  Gate:     The cats shown in the displayed search results are black.
+  Frames:   9/33 kept: [0, 3, 6, 11, 12, 22, 28, 31, 32]
+
+  Delta: -198.2 (Gate: -99.8 | Full: 98.4) [Task: instant]
+  Question: What visual symbol is displayed on the final screen to represent the accomplishment of the challenge?
+  Ref:      A large orange trophy icon appears in the center of the screen, accompanied by the text "WORKOUT COMPLETED", symbolically rewarding the user for finishing the session.
+  Full:     The final screen displays a trophy as the visual symbol representing the accomplishment of the challenge.
+  Gate:     The final screen displays a checkmark symbol to represent the accomplishment of the challenge.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -178.5 (Gate: -95.0 | Full: 83.4) [Task: backward]
+  Question: Based on the activities of the women near the window, what appears to be the nature of their work?
+  Ref:      They appear to be content creators or social media managers, consistent with the on-screen text identifying a "content creation team." One woman is seen dancing near the window, while another is seated filming herself applying makeup using a smartphone on a tripod. These activities indicate their work involves producing video content for the brand.
+  Full:     The women near the window appear to be engaged in a creative or artistic activity, possibly related to fashion or design.
+  Gate:     Based on the activities near the window, it appears that the women are engaged in a task that involves handling or arranging objects, possibly in a retail or office setting.
+  Frames:   5/33 kept: [0, 7, 21, 22, 32]
+
+  Delta: -175.8 (Gate: -77.1 | Full: 98.7) [Task: instant]
+  Question: During the final arrangement, where does she place the first invisible bookmark icon?
+  Ref:      She drags the first invisible bookmark icon to the top-left corner of the available app grid area. This acts as a spacer to push the subsequent real apps into the desired central position.
+  Full:     The first invisible bookmark icon is placed on the top of the screen.
+  Gate:     She places the first invisible bookmark icon on the tab.
+  Frames:   4/33 kept: [0, 28, 31, 32]
+
+  Delta: -163.3 (Gate: -100.0 | Full: 63.3) [Task: instant]
+  Question: What immediate physical reaction does the host show after taking a bite of the egg with toppings?
+  Ref:      Immediately after eating a spoonful of the egg covered in the red chili topping, she begins to cough and covers her mouth with her hand. She grimaces, exhales sharply, and verbally exclaims about the spiciness ("Ang hang!"), indicating she is overwhelmed by the heat.
+  Full:     The host chews the egg with toppings.
+  Gate:     The host shows no immediate physical reaction after taking a bite of the egg with toppings.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -148.8 (Gate: -48.9 | Full: 99.9) [Task: instant]
+  Question: Regarding the goat on the robot vacuum, what does it do when it finally gets off the device?
+  Ref:      After riding the robot vacuum for a few moments, the goat jumps off the robot vacuum.
+  Full:     The goat on the robot vacuum jumps off the device.
+  Gate:     The goat on the robot vacuum does not appear in the frames provided.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -141.9 (Gate: -99.8 | Full: 42.0) [Task: instant]
+  Question: What is the woman using to determine the quantity of the yellow ingredient she just cut?
+  Ref:      She is using a digital scale connected to a smartphone app. After placing the container with the butter on the scale, the phone's voice assistant audibly reads out the weight as "120", allowing her to measure precise amounts without seeing the display.
+  Full:     The woman is using a scale to determine the quantity of the yellow ingredient she just cut.
+  Gate:     The woman is using a measuring cup to determine the quantity of the yellow ingredient she just cut.
+  Frames:   4/33 kept: [0, 20, 23, 32]
+
+  Delta: -138.9 (Gate: -39.3 | Full: 99.6) [Task: instant]
+  Question: What happens when the user attempts to invoke the chatbot via Siri using a Chinese text prompt?
+  Ref:      The user types a prompt in Chinese ending with "ChatGPT" into the Siri interface. Instead of activating the chatbot to write the letter, the system simply displays a list of web search results related to the query, indicating a failure to trigger the AI feature.
+  Full:     When the user tries to activate the chatbot using a Chinese text prompt through Siri, the chatbot does not respond.
+  Gate:     The chatbot responds with a message in Chinese.
+  Frames:   4/33 kept: [0, 7, 8, 32]
+
+  Delta: -131.2 (Gate: -99.9 | Full: 31.3) [Task: instant]
+  Question: Looking at the map interface, what is the plane's flight path relative to "Z City"?
+  Ref:      The flight path, indicated by a dashed line, passes to the southeast of "Z City". On the map, "Z City" is located in the upper left coastal region, and the plane's trajectory cuts diagonally across the map, staying relatively close to this landmark.
+  Full:     The plane is flying over Z City.
+  Gate:     The plane's flight path is directly above Z City.
+  Frames:   4/33 kept: [0, 16, 20, 32]
+
+
+--- Condition gate@0.93 vs full (showing largest drops) ---
+  Delta: -198.8 (Gate: -99.9 | Full: 98.8) [Task: instant]
+  Question: What is the dominant color of the cats shown in the displayed search results?
+  Ref:      After the user inputs the search term, the gallery populates with a grid of images that predominantly feature a white cat.
+  Full:     The cats in the search results are predominantly white.
+  Gate:     The cats in the displayed search results are black.
+  Frames:   10/33 kept: [0, 3, 6, 7, 11, 12, 22, 28, 31, 32]
+
+  Delta: -198.2 (Gate: -99.8 | Full: 98.4) [Task: instant]
+  Question: What visual symbol is displayed on the final screen to represent the accomplishment of the challenge?
+  Ref:      A large orange trophy icon appears in the center of the screen, accompanied by the text "WORKOUT COMPLETED", symbolically rewarding the user for finishing the session.
+  Full:     The final screen displays a trophy as the visual symbol representing the accomplishment of the challenge.
+  Gate:     The final screen displays a checkmark symbol to represent the accomplishment of the challenge.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -190.7 (Gate: -99.9 | Full: 90.7) [Task: instant]
+  Question: Under the current low-light conditions, what does the slider setting showing '30 seconds' indicate?
+  Ref:      It indicates the exposure time for Night Mode. She has adjusted the exposure duration to the maximum of 30 seconds, which is available when the phone is stable (likely on a tripod), allowing the sensor to gather light for a longer period to capture a brighter image of the dark scene.
+  Full:     The slider setting showing '30 seconds' indicates the exposure time for the camera.
+  Gate:     The slider setting showing '30 seconds' indicates the duration of the live stream.
+  Frames:   4/33 kept: [0, 13, 25, 32]
+
+  Delta: -177.2 (Gate: -93.8 | Full: 83.4) [Task: backward]
+  Question: Based on the activities of the women near the window, what appears to be the nature of their work?
+  Ref:      They appear to be content creators or social media managers, consistent with the on-screen text identifying a "content creation team." One woman is seen dancing near the window, while another is seated filming herself applying makeup using a smartphone on a tripod. These activities indicate their work involves producing video content for the brand.
+  Full:     The women near the window appear to be engaged in a creative or artistic activity, possibly related to fashion or design.
+  Gate:     The women near the window appear to be engaged in a creative or artistic activity, possibly related to photography or design.
+  Frames:   6/33 kept: [0, 7, 21, 22, 31, 32]
+
+  Delta: -163.3 (Gate: -100.0 | Full: 63.3) [Task: instant]
+  Question: What immediate physical reaction does the host show after taking a bite of the egg with toppings?
+  Ref:      Immediately after eating a spoonful of the egg covered in the red chili topping, she begins to cough and covers her mouth with her hand. She grimaces, exhales sharply, and verbally exclaims about the spiciness ("Ang hang!"), indicating she is overwhelmed by the heat.
+  Full:     The host chews the egg with toppings.
+  Gate:     The host shows no immediate physical reaction after taking a bite of the egg with toppings.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -148.8 (Gate: -48.9 | Full: 99.9) [Task: instant]
+  Question: Regarding the goat on the robot vacuum, what does it do when it finally gets off the device?
+  Ref:      After riding the robot vacuum for a few moments, the goat jumps off the robot vacuum.
+  Full:     The goat on the robot vacuum jumps off the device.
+  Gate:     The goat on the robot vacuum does not appear in the frames provided.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -141.9 (Gate: -99.8 | Full: 42.0) [Task: instant]
+  Question: What is the woman using to determine the quantity of the yellow ingredient she just cut?
+  Ref:      She is using a digital scale connected to a smartphone app. After placing the container with the butter on the scale, the phone's voice assistant audibly reads out the weight as "120", allowing her to measure precise amounts without seeing the display.
+  Full:     The woman is using a scale to determine the quantity of the yellow ingredient she just cut.
+  Gate:     The woman is using a measuring cup to determine the quantity of the yellow ingredient she just cut.
+  Frames:   4/33 kept: [0, 20, 23, 32]
+
+  Delta: -138.9 (Gate: -39.3 | Full: 99.6) [Task: instant]
+  Question: What happens when the user attempts to invoke the chatbot via Siri using a Chinese text prompt?
+  Ref:      The user types a prompt in Chinese ending with "ChatGPT" into the Siri interface. Instead of activating the chatbot to write the letter, the system simply displays a list of web search results related to the query, indicating a failure to trigger the AI feature.
+  Full:     When the user tries to activate the chatbot using a Chinese text prompt through Siri, the chatbot does not respond.
+  Gate:     The chatbot responds with a message in Chinese.
+  Frames:   5/33 kept: [0, 7, 8, 9, 32]
+
+  Delta: -131.2 (Gate: -99.9 | Full: 31.3) [Task: instant]
+  Question: Looking at the map interface, what is the plane's flight path relative to "Z City"?
+  Ref:      The flight path, indicated by a dashed line, passes to the southeast of "Z City". On the map, "Z City" is located in the upper left coastal region, and the plane's trajectory cuts diagonally across the map, staying relatively close to this landmark.
+  Full:     The plane is flying over Z City.
+  Gate:     The plane's flight path is directly above Z City.
+  Frames:   4/33 kept: [0, 16, 20, 32]
+
+  Delta: -106.9 (Gate: -99.9 | Full: 7.0) [Task: backward]
+  Question: According to the presenter, why might the caller feel more comfortable if the user employs the Airplane Mode method to reject a call?
+  Ref:      The presenter explains that rejecting a call via Airplane Mode makes it appear as if the call failed due to poor signal or connection issues (mentioned as "收訊不佳"), rather than the user actively pressing the decline button. She suggests this is psychologically more comfortable for the caller as they don't feel intentionally rejected.
+  Full:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it is a more polite and respectful way to handle the situation.
+  Gate:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it provides a clear and direct way to signal that the call should be ended.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+
+--- Condition gate@0.95 vs full (showing largest drops) ---
+  Delta: -198.8 (Gate: -99.9 | Full: 98.8) [Task: instant]
+  Question: What is the dominant color of the cats shown in the displayed search results?
+  Ref:      After the user inputs the search term, the gallery populates with a grid of images that predominantly feature a white cat.
+  Full:     The cats in the search results are predominantly white.
+  Gate:     The cats in the displayed search results are black.
+  Frames:   10/33 kept: [0, 3, 6, 7, 11, 12, 22, 28, 31, 32]
+
+  Delta: -198.2 (Gate: -99.8 | Full: 98.4) [Task: instant]
+  Question: What visual symbol is displayed on the final screen to represent the accomplishment of the challenge?
+  Ref:      A large orange trophy icon appears in the center of the screen, accompanied by the text "WORKOUT COMPLETED", symbolically rewarding the user for finishing the session.
+  Full:     The final screen displays a trophy as the visual symbol representing the accomplishment of the challenge.
+  Gate:     The final screen displays a checkmark symbol to represent the accomplishment of the challenge.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -187.7 (Gate: -97.0 | Full: 90.7) [Task: instant]
+  Question: Under the current low-light conditions, what does the slider setting showing '30 seconds' indicate?
+  Ref:      It indicates the exposure time for Night Mode. She has adjusted the exposure duration to the maximum of 30 seconds, which is available when the phone is stable (likely on a tripod), allowing the sensor to gather light for a longer period to capture a brighter image of the dark scene.
+  Full:     The slider setting showing '30 seconds' indicates the exposure time for the camera.
+  Gate:     The slider setting showing '30 seconds' indicates the duration for which the camera stream will be recorded or saved.
+  Frames:   6/33 kept: [0, 6, 12, 19, 25, 32]
+
+  Delta: -177.2 (Gate: -93.8 | Full: 83.4) [Task: backward]
+  Question: Based on the activities of the women near the window, what appears to be the nature of their work?
+wrote results/iteration3/tables/noaudio_summary.csv (13 rows)
+wrote results/iteration3/tables/noaudio_by_task.csv (26 rows)
+wrote results/iteration3/tables/noaudio_paired.csv (12 rows)
+wrote results/iteration3/tables/noaudio_errors.csv (40 rows)
+  Ref:      They appear to be content creators or social media managers, consistent with the on-screen text identifying a "content creation team." One woman is seen dancing near the window, while another is seated filming herself applying makeup using a smartphone on a tripod. These activities indicate their work involves producing video content for the brand.
+  Full:     The women near the window appear to be engaged in a creative or artistic activity, possibly related to fashion or design.
+  Gate:     The women near the window appear to be engaged in a creative or artistic activity, possibly related to photography or design.
+  Frames:   7/33 kept: [0, 7, 21, 22, 27, 31, 32]
+
+  Delta: -163.3 (Gate: -100.0 | Full: 63.3) [Task: instant]
+  Question: What immediate physical reaction does the host show after taking a bite of the egg with toppings?
+  Ref:      Immediately after eating a spoonful of the egg covered in the red chili topping, she begins to cough and covers her mouth with her hand. She grimaces, exhales sharply, and verbally exclaims about the spiciness ("Ang hang!"), indicating she is overwhelmed by the heat.
+  Full:     The host chews the egg with toppings.
+  Gate:     The host shows no immediate physical reaction after taking a bite of the egg with toppings.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -148.8 (Gate: -48.9 | Full: 99.9) [Task: instant]
+  Question: Regarding the goat on the robot vacuum, what does it do when it finally gets off the device?
+  Ref:      After riding the robot vacuum for a few moments, the goat jumps off the robot vacuum.
+  Full:     The goat on the robot vacuum jumps off the device.
+  Gate:     The goat on the robot vacuum does not appear in the frames provided.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -141.9 (Gate: -99.8 | Full: 42.0) [Task: instant]
+  Question: What is the woman using to determine the quantity of the yellow ingredient she just cut?
+  Ref:      She is using a digital scale connected to a smartphone app. After placing the container with the butter on the scale, the phone's voice assistant audibly reads out the weight as "120", allowing her to measure precise amounts without seeing the display.
+  Full:     The woman is using a scale to determine the quantity of the yellow ingredient she just cut.
+  Gate:     The woman is using a measuring cup to determine the quantity of the yellow ingredient she just cut.
+  Frames:   5/33 kept: [0, 19, 20, 23, 32]
+
+  Delta: -138.9 (Gate: -39.3 | Full: 99.6) [Task: instant]
+  Question: What happens when the user attempts to invoke the chatbot via Siri using a Chinese text prompt?
+  Ref:      The user types a prompt in Chinese ending with "ChatGPT" into the Siri interface. Instead of activating the chatbot to write the letter, the system simply displays a list of web search results related to the query, indicating a failure to trigger the AI feature.
+  Full:     When the user tries to activate the chatbot using a Chinese text prompt through Siri, the chatbot does not respond.
+  Gate:     The chatbot responds with a message in Chinese.
+  Frames:   5/33 kept: [0, 7, 8, 9, 32]
+
+  Delta: -131.2 (Gate: -99.9 | Full: 31.3) [Task: instant]
+  Question: Looking at the map interface, what is the plane's flight path relative to "Z City"?
+  Ref:      The flight path, indicated by a dashed line, passes to the southeast of "Z City". On the map, "Z City" is located in the upper left coastal region, and the plane's trajectory cuts diagonally across the map, staying relatively close to this landmark.
+  Full:     The plane is flying over Z City.
+  Gate:     The plane's flight path is directly above Z City.
+  Frames:   4/33 kept: [0, 16, 20, 32]
+
+  Delta: -106.9 (Gate: -99.9 | Full: 7.0) [Task: backward]
+  Question: According to the presenter, why might the caller feel more comfortable if the user employs the Airplane Mode method to reject a call?
+  Ref:      The presenter explains that rejecting a call via Airplane Mode makes it appear as if the call failed due to poor signal or connection issues (mentioned as "收訊不佳"), rather than the user actively pressing the decline button. She suggests this is psychologically more comfortable for the caller as they don't feel intentionally rejected.
+  Full:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it is a more polite and respectful way to handle the situation.
+  Gate:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it provides a clear and direct way to signal that the call should be ended.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+

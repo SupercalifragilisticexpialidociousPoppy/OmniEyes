@@ -1,0 +1,14 @@
+condition,audio_minus_noaudio_with_track,audio_minus_noaudio_no_track
+full,-2.36,0.01
+gate@0.88,15.56,-0.02
+uniform@0.88,14.95,-0.02
+pixel@0.88,18.21,-0.02
+gate@0.9,17.8,-0.02
+uniform@0.9,16.59,-0.02
+pixel@0.9,19.43,-0.02
+gate@0.93,14.63,-0.02
+uniform@0.93,14.1,-0.02
+pixel@0.93,17.47,-0.02
+gate@0.95,14.55,-0.02
+uniform@0.95,14.89,-0.02
+pixel@0.95,14.14,-0.02

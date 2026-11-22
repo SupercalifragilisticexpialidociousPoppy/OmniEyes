@@ -1,0 +1,45 @@
+=== 1. Audio minus no-audio, same question & condition ===
+condition            has audio track (n=118)    no audio track (n=32, control)
+full                 -2.4 [ -13.5,   +9.0]             +0.0 [  -0.0,   +0.1]  
+gate@0.88           +15.6 [  +3.5,  +27.4] *           -0.0 [  -0.1,   +0.0]  
+uniform@0.88        +14.9 [  +2.4,  +27.6] *           -0.0 [  -0.1,   +0.0]  
+pixel@0.88          +18.2 [  +5.6,  +30.1] *           -0.0 [  -0.1,   +0.0]  
+gate@0.9            +17.8 [  +6.4,  +29.2] *           -0.0 [  -0.1,   +0.0]  
+uniform@0.9         +16.6 [  +3.8,  +30.8] *           -0.0 [  -0.1,   +0.0]  
+pixel@0.9           +19.4 [  +6.7,  +32.6] *           -0.0 [  -0.1,   +0.0]  
+gate@0.93           +14.6 [  +1.5,  +27.7] *           -0.0 [  -0.1,   +0.0]  
+uniform@0.93        +14.1 [  +0.8,  +27.8] *           -0.0 [  -0.1,   +0.0]  
+pixel@0.93          +17.5 [  +3.5,  +31.1] *           -0.0 [  -0.1,   +0.0]  
+gate@0.95           +14.5 [  +1.8,  +27.7] *           -0.0 [  -0.1,   +0.0]  
+uniform@0.95        +14.9 [  +1.8,  +27.9] *           -0.0 [  -0.1,   +0.0]  
+pixel@0.95          +14.1 [  +1.5,  +26.8] *           -0.0 [  -0.1,   +0.0]  
+
+identical answers audio vs no-audio, no-track questions: 416 / 416
+
+=== 2. Gate minus full, questions WITH an audio track ===
+  with audio  gate@0.88  vs full   +2.5 [  -7.8,  +12.9]  
+  with audio  gate@0.9   vs full   +4.6 [  -5.6,  +14.7]  
+  with audio  gate@0.93  vs full   +6.3 [  -3.9,  +16.7]  
+  with audio  gate@0.95  vs full   +5.3 [  -4.5,  +15.5]  
+  no audio    gate@0.88  vs full  -15.4 [ -25.8,   -5.9] *
+  no audio    gate@0.9   vs full  -15.6 [ -25.6,   -6.0] *
+  no audio    gate@0.93  vs full  -10.7 [ -19.8,   -1.9] *
+  no audio    gate@0.95  vs full  -11.6 [ -20.9,   -2.0] *
+
+=== 3. Gate minus full by task, audio run, all questions ===
+  instant   gate@0.9   vs full   -7.1 [ -16.5,   +2.7]    n=103
+  instant   gate@0.95  vs full   -7.6 [ -17.8,   +2.2]    n=103
+  backward  gate@0.9   vs full  +18.1 [  -2.0,  +40.2]    n=47
+  backward  gate@0.95  vs full  +20.8 [  +3.3,  +40.2] *  n=47
+
+=== 4. Do the methods now get different frames? ===
+  tau 0.88: gate=pixel frames 87/150, gate=uniform 1/150, all-3 identical answers 106/150, current frame kept 150/150, gate n_kept {3: 1, 4: 123, 5: 6, 6: 13, 7: 3, 9: 4}
+  tau 0.9: gate=pixel frames 80/150, gate=uniform 1/150, all-3 identical answers 107/150, current frame kept 150/150, gate n_kept {3: 1, 4: 120, 5: 5, 6: 9, 7: 10, 8: 1, 9: 4}
+  tau 0.93: gate=pixel frames 80/150, gate=uniform 1/150, all-3 identical answers 108/150, current frame kept 150/150, gate n_kept {3: 1, 4: 107, 5: 8, 6: 9, 7: 8, 8: 3, 9: 5, 10: 8, 11: 1}
+  tau 0.95: gate=pixel frames 83/150, gate=uniform 1/150, all-3 identical answers 110/150, current frame kept 150/150, gate n_kept {3: 1, 4: 94, 5: 13, 6: 11, 7: 8, 8: 6, 9: 4, 10: 7, 11: 1, 12: 3, 13: 2}
+
+=== 5. Latency (s) and prompt tokens, mean ===
+  audio     full      LLM 3.28s  tokens 3130  gen 18.5
+  audio     gate@0.9  LLM 1.27s  tokens 783  gen 18.0
+  no audio  full      LLM 3.11s  tokens 2815  gen 19.0
+  no audio  gate@0.9  LLM 1.17s  tokens 468  gen 18.6

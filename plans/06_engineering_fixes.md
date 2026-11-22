@@ -1,5 +1,13 @@
 # 06 · Engineering fixes (cheap, do first)
 
+## 0. Every question was answered from the same video (iterations 1–3) — fixed, runs must be redone
+- **What happened:** all PhoStream videos are named `output_1.mp4`. The old `resolve_video()` tried the annotation path, then fell back to "any file with the same name", taking the first hit. The annotation path never matched the extracted folders, so **every question in iterations 1, 2 and 3 used one and the same (~10-minute) video**.
+- **Evidence:** at the same timestamp, different videos always got identical frame selections (19/19, 23/23, 19/19 pairs), and no question after ~615 s got audio (the stand-in video's length).
+- **Not affected:** timing and token counts (they depend on frame counts), and the code-level findings (e.g. the gate keeping only the oldest frame).
+- **Fix (iteration 3):** `resolve_video()` matches the end of the folder path, never guesses, and returns nothing if the match is missing or ambiguous. `run.py` drops such questions before sampling and logs `video_file` in every row.
+- **To do:** download all four archives and re-run the iteration 3 audio and no-audio runs. Iterations 1–2 reports are left as submitted.
+
+
 ## 1. `resume_from_k` crash and the fake 50 ms
 **Status: resolved for timing in iteration 3.** `resume_from_k()` crashed again on Qwen2.5-Omni (`position_embeddings` was None). It was replaced by `EarlyLayerGate.split_time()`: a timing hook marks the end of block K inside a real full pass, so `resume_ms` is measured with the model's own code path, in any `transformers` version. Items 2–3 below still apply if resumed features are ever fed to generation.
 

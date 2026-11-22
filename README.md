@@ -25,6 +25,7 @@ OmniEyes/
 │   ├── calibrate.py              summarises gate similarities to help choose τ
 │   ├── semantic_judge.py         local NLI grader (used for all reported scores)
 │   ├── analyze.py                tables, paired confidence intervals, error lists, CSV export
+│   ├── compare_audio.py          compares an audio run with its --no_audio twin
 │   ├── judge.py                  LLM-as-judge over an API (kept for reference, not used)
 │   └── test_gate_cpu.py          CPU smoke test of gate.py on a tiny random model
 ├── reports/
@@ -68,6 +69,8 @@ It writes one JSON line per (question, condition), containing:
 - prompt tokens and LLM latency.
 
 If Colab disconnects, re-running the same command skips finished (question, condition) pairs.
+
+Each question is answered only from its **own** video. All PhoStream videos are named `output_1.mp4`, so `resolve_video()` matches on the folder path, never on the file name alone. Questions whose video isn't downloaded, or whose match is ambiguous, are skipped before sampling. Each output row records the file used (`video_file`). Iterations 1–3 lacked this check, and every question was answered from the same video (see `plans/06_engineering_fixes.md`).
 
 Main options:
 
@@ -142,6 +145,16 @@ Options:
 | `--csv PREFIX` | also write `PREFIX_summary.csv`, `_by_task.csv`, `_paired.csv` and `_errors.csv` |
 | several files | combine runs, e.g. a K=1 / 3 / 6 ablation; conditions are labelled by K |
 
+### `src/compare_audio.py`: audio vs no-audio
+Takes a graded audio run and its `--no_audio` twin (same questions and settings). It prints:
+- audio minus no-audio per condition, split into questions with and without an audio track. Videos without a track are a control: their difference must be about 0;
+- gate vs full, with and without audio;
+- gate vs full per task;
+- how often gate, uniform and pixel picked the same frames or gave identical answers;
+- mean latency and tokens.
+
+`--csv` saves the per-condition table.
+
 ### `src/judge.py`: LLM judge (not used for results)
 Grades answers 0–100 with any OpenAI-compatible chat API (`JUDGE_BASE_URL`, `JUDGE_API_KEY`, `JUDGE_MODEL`). It rate-limits requests (`--rps`) and marks unparseable replies as `-1`. It was replaced by `semantic_judge.py` after the iteration 1 failure and API rate limits. If you use it: `JUDGE_MODEL` must be a chat model, not a speech model such as `whisper-*`. Keep keys in Colab's Secrets panel, never in the notebook.
 
@@ -173,22 +186,32 @@ In a new session after a disconnect, run `%cd /content/OmniEyes` and `!git pull`
 - `decord` reads video frames. `sentence-transformers` and `scipy` are only for grading (steps 8–10).
 - `ffmpeg`, used to read the audio, is already installed on Colab.
 
-### 3. Download the dataset
+### 3. Download the dataset (all four video archives)
+PhoStream's questions come from four video sources, each a separate archive: EgoBlind, phone_class, record_file and youtube_dl (about 12 GB in total). `run.py` only uses questions whose own video is downloaded, so download all four to get the full question mix.
 ```bash
 !git clone https://github.com/Lucky-Lance/PhoStream
-!hf download lucky-lance/PhoStream phone_class_reencoded_2fps.tar.gz --repo-type dataset --local-dir videos
-!cd videos && tar -xf phone_class_reencoded_2fps.tar.gz
+# see which archives the dataset has
+from huggingface_hub import list_repo_files
+print([f for f in list_repo_files("lucky-lance/PhoStream", repo_type="dataset") if f.endswith(".tar.gz")])
+# download every archive, then extract each one and delete the .tar.gz to save disk
+!hf download lucky-lance/PhoStream --repo-type dataset --include "*.tar.gz" --local-dir videos
+!cd videos && for f in *.tar.gz; do echo "extracting $f"; tar -xf "$f" && rm "$f"; done
 ```
-On an older `huggingface_hub`, the command is `huggingface-cli download` instead of `hf download`. Iteration 2 also used the EgoBlind, record_file and youtube_dl archives. Download them the same way if you want the same question mix.
+- To download only some sources, replace `--include "*.tar.gz"` with one archive name from the printed list (e.g. `phone_class_reencoded_2fps.tar.gz`). `run.py` then samples only from those sources.
+- On an older `huggingface_hub`, the command is `huggingface-cli download` instead of `hf download`.
+- Colab deletes `videos/` when the session ends. Re-downloading takes a few minutes, which is faster than keeping 12 GB on Google Drive.
 
 ### 4. Check the setup
 ```bash
 !python src/data.py PhoStream/dataset/phostream_annotations.json
 !python src/test_gate_cpu.py
 !ffprobe -v error -select_streams a -show_entries stream=codec_name,sample_rate -of csv=p=0 "$(find videos -name '*.mp4' | head -1)"
+!find videos -name '*.mp4' | wc -l          # how many videos were extracted
+!find videos -name '*.mp4' | head -3        # what the extracted paths look like
 ```
 - `data.py` should print the number of parsed questions and the task types.
 - `test_gate_cpu.py` should end with `ALL TESTS PASSED`.
+- The `find` lines show how many videos you have and how their paths look. At startup, `run.py` prints how many questions found their own video, per source, and how many were skipped. **If it says 0 found, the archive extracted under different folder names than the annotation paths:** compare a printed path with the "no file for:" example `run.py` prints.
 - `ffprobe` prints the audio track, e.g. `aac,44100`. **If it prints nothing, the videos have no audio.** Omni runs then fall back to video only, and every output row shows `audio_s = 0`.
 
 ### 5. Save results to Google Drive

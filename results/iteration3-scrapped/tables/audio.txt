@@ -1,0 +1,338 @@
+Metric: ent_con (x100)
+condition             n   score  frames   ViT ms  ViT %ideal  ViT %act  tokens  LLM s
+full                150   -31.9    32.1     3090        100%      100%    3130   3.28
+gate@0.88           150   -32.7     4.4      825         27%       28%     771   1.30
+pixel@0.88          150   -31.4     4.4      424         14%       14%     771   1.29
+uniform@0.88        150   -31.3     4.4      424         14%       14%     771   1.28
+gate@0.9            150   -31.1     4.5      834         27%       29%     783   1.27
+pixel@0.9           150   -30.5     4.5      434         14%       14%     783   1.30
+uniform@0.9         150   -29.6     4.5      434         14%       14%     783   1.28
+gate@0.93           150   -29.8     4.9      870         28%       30%     820   1.34
+pixel@0.93          150   -28.9     4.9      476         15%       15%     820   1.34
+uniform@0.93        150   -30.7     4.9      476         15%       15%     820   1.33
+gate@0.95           150   -30.6     5.3      899         29%       31%     851   1.35
+pixel@0.95          150   -30.7     5.3      509         16%       16%     851   1.34
+uniform@0.95        150   -31.2     5.3      509         16%       16%     851   1.34
+
+Score by task (excluding parse failures):
+  full              backward=-24.7(n=47)  instant=-35.2(n=103)
+  gate@0.88         backward=-8.7(n=47)  instant=-43.7(n=103)
+  gate@0.9          backward=-6.5(n=47)  instant=-42.4(n=103)
+  gate@0.93         backward=-1.8(n=47)  instant=-42.5(n=103)
+  gate@0.95         backward=-3.9(n=47)  instant=-42.8(n=103)
+  pixel@0.88        backward=-4.9(n=47)  instant=-43.5(n=103)
+  pixel@0.9         backward=-4.9(n=47)  instant=-42.1(n=103)
+  pixel@0.93        backward=1.4(n=47)  instant=-42.8(n=103)
+  pixel@0.95        backward=-4.8(n=47)  instant=-42.5(n=103)
+  uniform@0.88      backward=-11.3(n=47)  instant=-40.5(n=103)
+  uniform@0.9       backward=-9.2(n=47)  instant=-38.9(n=103)
+  uniform@0.93      backward=-10.8(n=47)  instant=-39.7(n=103)
+  uniform@0.95      backward=-10.8(n=47)  instant=-40.5(n=103)
+
+Paired diff (gate - baseline), 95% bootstrap CI   (* = CI excludes 0):
+  gate@0.88          vs uniform@0.88         -1.4 [  -7.1,   +4.4] n=150   
+  gate@0.88          vs pixel@0.88           -1.3 [  -3.0,   -0.2] n=150  *
+  gate@0.88          vs full                 -0.8 [ -10.6,   +8.9] n=150   
+  gate@0.9           vs uniform@0.9          -1.6 [  -7.2,   +4.2] n=150   
+  gate@0.9           vs pixel@0.9            -0.7 [  -3.1,   +1.6] n=150   
+  gate@0.9           vs full                 +0.8 [  -9.0,  +10.3] n=150   
+  gate@0.93          vs uniform@0.93         +0.9 [  -4.1,   +5.9] n=150   
+  gate@0.93          vs pixel@0.93           -0.8 [  -2.6,   +0.5] n=150   
+  gate@0.93          vs full                 +2.1 [  -7.6,  +12.1] n=150   
+  gate@0.95          vs uniform@0.95         +0.6 [  -4.3,   +5.9] n=150   
+  gate@0.95          vs pixel@0.95           +0.1 [  -2.5,   +3.4] n=150   
+  gate@0.95          vs full                 +1.3 [  -8.3,  +10.7] n=150   
+
+=== ERROR ANALYSIS: 10 WORST DROPS VS FULL ===
+
+--- Condition gate@0.88 vs full (showing largest drops) ---
+  Delta: -199.0 (Gate: -99.8 | Full: 99.2) [Task: backward]
+  Question: Now looking at the iPhone 11, what does its cycle count reveal compared to the previous phone?
+  Ref:      The iPhone 11 shows a significantly higher cycle count of 465. This contrasts with the 167 cycles seen on the newer iPhone 12 Pro Max, reflecting the longer usage period of about a year and a half for this older device.
+  Full:     The iPhone 11 has a cycle count that is higher than the previous phone.
+  Gate:     The cycle count of the iPhone 11 is lower than that of the previous phone.
+  Frames:   6/33 kept: [0, 7, 12, 30, 31, 32]
+
+  Delta: -198.2 (Gate: -99.8 | Full: 98.4) [Task: instant]
+  Question: What visual symbol is displayed on the final screen to represent the accomplishment of the challenge?
+  Ref:      A large orange trophy icon appears in the center of the screen, accompanied by the text "WORKOUT COMPLETED", symbolically rewarding the user for finishing the session.
+  Full:     The final screen displays a trophy as the visual symbol representing the accomplishment of the challenge.
+  Gate:     The final screen displays a checkmark symbol to represent the accomplishment of the challenge.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -196.8 (Gate: -97.5 | Full: 99.3) [Task: instant]
+  Question: What do the different sound icons in the navigation audio settings represent?
+  Ref:      The menu presents three distinct icons corresponding to audio feedback levels. The top speaker with sound waves indicates full turn-by-turn instructions, the middle speaker with an exclamation mark signifies "important alerts only," and the bottom slashed speaker represents a completely muted state.
+  Full:     The different sound icons in the navigation audio settings represent various types of notifications or alerts.
+  Gate:     The different sound icons in the navigation audio settings represent various functions such as navigation, search, and other specific actions.
+  Frames:   4/33 kept: [0, 8, 29, 32]
+
+  Delta: -196.3 (Gate: -99.9 | Full: 96.4) [Task: instant]
+  Question: Based on her introduction, what specific event is she preparing to attend?
+  Ref:      She states she is heading to see Tate McRae in concert at Madison Square Garden. She expresses excitement about bringing viewers along for the concert vlog.
+  Full:     She is preparing to attend a live phone camera stream.
+  Gate:     She is preparing to attend a conference.
+  Frames:   4/33 kept: [0, 5, 16, 32]
+
+  Delta: -163.8 (Gate: -100.0 | Full: 63.8) [Task: instant]
+  Question: What immediate physical reaction does the host show after taking a bite of the egg with toppings?
+  Ref:      Immediately after eating a spoonful of the egg covered in the red chili topping, she begins to cough and covers her mouth with her hand. She grimaces, exhales sharply, and verbally exclaims about the spiciness ("Ang hang!"), indicating she is overwhelmed by the heat.
+  Full:     The host chews the egg with toppings.
+  Gate:     The host shows no immediate physical reaction after taking a bite of the egg with toppings.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -149.0 (Gate: -49.1 | Full: 99.9) [Task: instant]
+  Question: Regarding the goat on the robot vacuum, what does it do when it finally gets off the device?
+  Ref:      After riding the robot vacuum for a few moments, the goat jumps off the robot vacuum.
+  Full:     The goat on the robot vacuum jumps off the device.
+  Gate:     The goat on the robot vacuum does not appear in the frames provided.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -106.9 (Gate: -99.9 | Full: 7.0) [Task: backward]
+  Question: According to the presenter, why might the caller feel more comfortable if the user employs the Airplane Mode method to reject a call?
+  Ref:      The presenter explains that rejecting a call via Airplane Mode makes it appear as if the call failed due to poor signal or connection issues (mentioned as "收訊不佳"), rather than the user actively pressing the decline button. She suggests this is psychologically more comfortable for the caller as they don't feel intentionally rejected.
+  Full:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it is a more polite and respectful way to handle the situation.
+  Gate:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it provides a clear and direct way to signal that the call should be ended.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -99.8 (Gate: -100.0 | Full: -0.2) [Task: instant]
+  Question: While the characters are searching and singing "Oh where has my little dog gone", where is the dog actually visible in the frame?
+  Ref:      In a brief cutaway shot during the song, the dog is clearly visible lying down on the stone path near the base of the wooden bridge structure, while the characters continue to search elsewhere.
+  Full:     The dog is visible in the frame at coordinates (x: 100, y: 100) with a size of (width: 50, height: 50).
+  Gate:     The dog is not visible in the frame.
+  Frames:   4/33 kept: [0, 18, 23, 32]
+
+  Delta: -99.3 (Gate: -0.0 | Full: 99.3) [Task: backward]
+  Question: In the concluding remarks, what specific group of people does the presenter suggest needs extra assistance with these settings?
+  Ref:      She suggests helping elderly family members or seniors at home. She advises checking their Facebook accounts to ensure their personal data is hidden, as they might be less aware of these privacy risks.
+  Full:     The presenter suggests that older people need extra assistance with these settings.
+  Gate:     The presenter suggests that people with disabilities may need extra assistance with these settings.
+  Frames:   5/33 kept: [0, 10, 15, 27, 32]
+
+  Delta: -99.0 (Gate: -99.3 | Full: -0.2) [Task: instant]
+  Question: According to the slide presentation shown during the discussion of the third module, what is a key characteristic of the projects used in this course?
+  Ref:      The slide text and audio narration confirm that all practical projects in the course are derived from "authentic datasets" and designed around "actual tasks" to ensure relevance.
+  Full:     The key characteristic of the projects in this course is that they are designed to be completed in a single session.
+  Gate:     The key characteristic of the projects in this course is that they are open-ended.
+  Frames:   6/33 kept: [0, 4, 7, 19, 24, 32]
+
+
+--- Condition gate@0.9 vs full (showing largest drops) ---
+  Delta: -199.0 (Gate: -99.8 | Full: 99.2) [Task: backward]
+  Question: Now looking at the iPhone 11, what does its cycle count reveal compared to the previous phone?
+  Ref:      The iPhone 11 shows a significantly higher cycle count of 465. This contrasts with the 167 cycles seen on the newer iPhone 12 Pro Max, reflecting the longer usage period of about a year and a half for this older device.
+  Full:     The iPhone 11 has a cycle count that is higher than the previous phone.
+  Gate:     The cycle count of the iPhone 11 is lower than that of the previous phone.
+  Frames:   6/33 kept: [0, 7, 12, 30, 31, 32]
+
+  Delta: -198.2 (Gate: -99.8 | Full: 98.4) [Task: instant]
+  Question: What visual symbol is displayed on the final screen to represent the accomplishment of the challenge?
+  Ref:      A large orange trophy icon appears in the center of the screen, accompanied by the text "WORKOUT COMPLETED", symbolically rewarding the user for finishing the session.
+  Full:     The final screen displays a trophy as the visual symbol representing the accomplishment of the challenge.
+  Gate:     The final screen displays a checkmark symbol to represent the accomplishment of the challenge.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -196.8 (Gate: -97.5 | Full: 99.3) [Task: instant]
+  Question: What do the different sound icons in the navigation audio settings represent?
+  Ref:      The menu presents three distinct icons corresponding to audio feedback levels. The top speaker with sound waves indicates full turn-by-turn instructions, the middle speaker with an exclamation mark signifies "important alerts only," and the bottom slashed speaker represents a completely muted state.
+  Full:     The different sound icons in the navigation audio settings represent various types of notifications or alerts.
+  Gate:     The different sound icons in the navigation audio settings represent various functions such as navigation, search, and other specific actions.
+  Frames:   4/33 kept: [0, 8, 29, 32]
+
+  Delta: -196.3 (Gate: -99.9 | Full: 96.4) [Task: instant]
+  Question: Based on her introduction, what specific event is she preparing to attend?
+  Ref:      She states she is heading to see Tate McRae in concert at Madison Square Garden. She expresses excitement about bringing viewers along for the concert vlog.
+  Full:     She is preparing to attend a live phone camera stream.
+  Gate:     She is preparing to attend a conference.
+  Frames:   4/33 kept: [0, 5, 16, 32]
+
+  Delta: -163.8 (Gate: -100.0 | Full: 63.8) [Task: instant]
+  Question: What immediate physical reaction does the host show after taking a bite of the egg with toppings?
+  Ref:      Immediately after eating a spoonful of the egg covered in the red chili topping, she begins to cough and covers her mouth with her hand. She grimaces, exhales sharply, and verbally exclaims about the spiciness ("Ang hang!"), indicating she is overwhelmed by the heat.
+  Full:     The host chews the egg with toppings.
+  Gate:     The host shows no immediate physical reaction after taking a bite of the egg with toppings.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -149.0 (Gate: -49.1 | Full: 99.9) [Task: instant]
+  Question: Regarding the goat on the robot vacuum, what does it do when it finally gets off the device?
+  Ref:      After riding the robot vacuum for a few moments, the goat jumps off the robot vacuum.
+  Full:     The goat on the robot vacuum jumps off the device.
+  Gate:     The goat on the robot vacuum does not appear in the frames provided.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -106.9 (Gate: -99.9 | Full: 7.0) [Task: backward]
+  Question: According to the presenter, why might the caller feel more comfortable if the user employs the Airplane Mode method to reject a call?
+  Ref:      The presenter explains that rejecting a call via Airplane Mode makes it appear as if the call failed due to poor signal or connection issues (mentioned as "收訊不佳"), rather than the user actively pressing the decline button. She suggests this is psychologically more comfortable for the caller as they don't feel intentionally rejected.
+  Full:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it is a more polite and respectful way to handle the situation.
+  Gate:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it provides a clear and direct way to signal that the call should be ended.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -99.0 (Gate: -99.3 | Full: -0.2) [Task: instant]
+  Question: According to the slide presentation shown during the discussion of the third module, what is a key characteristic of the projects used in this course?
+  Ref:      The slide text and audio narration confirm that all practical projects in the course are derived from "authentic datasets" and designed around "actual tasks" to ensure relevance.
+  Full:     The key characteristic of the projects in this course is that they are designed to be completed in a single session.
+  Gate:     The key characteristic of the projects in this course is that they are open-ended.
+  Frames:   6/33 kept: [0, 4, 7, 19, 24, 32]
+
+  Delta: -98.5 (Gate: -99.6 | Full: -1.1) [Task: instant]
+  Question: In the Safari Website Data settings, how much total data is shown at the top?
+  Ref:      It shows 1.1 GB. The "Website Data" screen displays this total next to the header at the top, summarizing the cache and logs from the list of visited websites visible below, which includes sites like google.com.
+  Full:     The total data shown at the top in the Safari Website Data settings is 1.
+  Gate:     The total data shown at the top in the Safari Website Data settings is 200 gigabytes.
+  Frames:   4/33 kept: [0, 4, 9, 32]
+
+  Delta: -88.0 (Gate: -95.1 | Full: -7.1) [Task: instant]
+  Question: Back in the Yidget app, which specific parts of the grid does she select to download?
+  Ref:      She selects the four squares located in the center of the grid. Specifically, she taps the two side squares in the third row and the two side squares in the fourth row, downloading the background images that correspond to the central 2x2 area where the apps will be placed.
+  Full:     She selects the specific parts of the grid by clicking on the download icons associated with each item.
+  Gate:     She selects the specific parts of the grid by clicking on the individual cells.
+  Frames:   4/33 kept: [0, 15, 24, 32]
+
+
+--- Condition gate@0.93 vs full (showing largest drops) ---
+  Delta: -198.8 (Gate: -99.9 | Full: 98.8) [Task: instant]
+  Question: What is the dominant color of the cats shown in the displayed search results?
+  Ref:      After the user inputs the search term, the gallery populates with a grid of images that predominantly feature a white cat.
+  Full:     The cats in the search results are predominantly white.
+  Gate:     The cats in the search results are predominantly black.
+  Frames:   10/33 kept: [0, 3, 6, 7, 11, 12, 22, 28, 31, 32]
+
+  Delta: -198.2 (Gate: -99.8 | Full: 98.4) [Task: instant]
+  Question: What visual symbol is displayed on the final screen to represent the accomplishment of the challenge?
+  Ref:      A large orange trophy icon appears in the center of the screen, accompanied by the text "WORKOUT COMPLETED", symbolically rewarding the user for finishing the session.
+  Full:     The final screen displays a trophy as the visual symbol representing the accomplishment of the challenge.
+  Gate:     The final screen displays a checkmark symbol to represent the accomplishment of the challenge.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -196.8 (Gate: -97.5 | Full: 99.3) [Task: instant]
+  Question: What do the different sound icons in the navigation audio settings represent?
+  Ref:      The menu presents three distinct icons corresponding to audio feedback levels. The top speaker with sound waves indicates full turn-by-turn instructions, the middle speaker with an exclamation mark signifies "important alerts only," and the bottom slashed speaker represents a completely muted state.
+  Full:     The different sound icons in the navigation audio settings represent various types of notifications or alerts.
+  Gate:     The different sound icons in the navigation audio settings represent various functions such as navigation, search, and other specific actions.
+  Frames:   4/33 kept: [0, 8, 29, 32]
+
+  Delta: -196.3 (Gate: -99.9 | Full: 96.4) [Task: instant]
+  Question: Based on her introduction, what specific event is she preparing to attend?
+  Ref:      She states she is heading to see Tate McRae in concert at Madison Square Garden. She expresses excitement about bringing viewers along for the concert vlog.
+  Full:     She is preparing to attend a live phone camera stream.
+  Gate:     She is preparing to attend a conference.
+  Frames:   4/33 kept: [0, 16, 30, 32]
+
+  Delta: -163.8 (Gate: -100.0 | Full: 63.8) [Task: instant]
+  Question: What immediate physical reaction does the host show after taking a bite of the egg with toppings?
+  Ref:      Immediately after eating a spoonful of the egg covered in the red chili topping, she begins to cough and covers her mouth with her hand. She grimaces, exhales sharply, and verbally exclaims about the spiciness ("Ang hang!"), indicating she is overwhelmed by the heat.
+  Full:     The host chews the egg with toppings.
+  Gate:     The host shows no immediate physical reaction after taking a bite of the egg with toppings.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -149.0 (Gate: -49.1 | Full: 99.9) [Task: instant]
+  Question: Regarding the goat on the robot vacuum, what does it do when it finally gets off the device?
+  Ref:      After riding the robot vacuum for a few moments, the goat jumps off the robot vacuum.
+  Full:     The goat on the robot vacuum jumps off the device.
+  Gate:     The goat on the robot vacuum does not appear in the frames provided.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -106.9 (Gate: -99.9 | Full: 7.0) [Task: backward]
+  Question: According to the presenter, why might the caller feel more comfortable if the user employs the Airplane Mode method to reject a call?
+  Ref:      The presenter explains that rejecting a call via Airplane Mode makes it appear as if the call failed due to poor signal or connection issues (mentioned as "收訊不佳"), rather than the user actively pressing the decline button. She suggests this is psychologically more comfortable for the caller as they don't feel intentionally rejected.
+  Full:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it is a more polite and respectful way to handle the situation.
+  Gate:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it provides a clear and direct way to signal that the call should be ended.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -98.5 (Gate: -99.6 | Full: -1.1) [Task: instant]
+  Question: In the Safari Website Data settings, how much total data is shown at the top?
+  Ref:      It shows 1.1 GB. The "Website Data" screen displays this total next to the header at the top, summarizing the cache and logs from the list of visited websites visible below, which includes sites like google.com.
+  Full:     The total data shown at the top in the Safari Website Data settings is 1.
+  Gate:     The total data shown at the top in the Safari Website Data settings is 200 gigabytes.
+  Frames:   4/33 kept: [0, 4, 9, 32]
+
+  Delta: -88.0 (Gate: -95.1 | Full: -7.1) [Task: instant]
+  Question: Back in the Yidget app, which specific parts of the grid does she select to download?
+  Ref:      She selects the four squares located in the center of the grid. Specifically, she taps the two side squares in the third row and the two side squares in the fourth row, downloading the background images that correspond to the central 2x2 area where the apps will be placed.
+  Full:     She selects the specific parts of the grid by clicking on the download icons associated with each item.
+  Gate:     She selects the specific parts of the grid by clicking on the individual cells.
+  Frames:   4/33 kept: [0, 8, 18, 32]
+
+  Delta: -87.2 (Gate: -91.4 | Full: -4.2) [Task: backward]
+  Question: What event immediately interrupts the camera person's movement through the corridor at the beginning of the clip?
+  Ref:      At the very beginning of the footage, the camera suddenly tilts and shakes as the camera person collides with a young boy wearing a black jacket. The audio captures immediate apologies ("Bu hao yi si" meaning "Sorry") from the camera person.
+  Full:     The camera person is interrupted by a loud bang.
+  Gate:     The camera person is interrupted by a door opening.
+  Frames:   4/15 kept: [0, 5, 7, 14]
+
+
+--- Condition gate@0.95 vs full (showing largest drops) ---
+  Delta: -198.8 (Gate: -99.9 | Full: 98.8) [Task: instant]
+  Question: What is the dominant color of the cats shown in the displayed search results?
+  Ref:      After the user inputs the search term, the gallery populates with a grid of images that predominantly feature a white cat.
+  Full:     The cats in the search results are predominantly white.
+  Gate:     The cats in the search results are predominantly black.
+  Frames:   10/33 kept: [0, 3, 6, 7, 11, 12, 22, 28, 31, 32]
+
+  Delta: -198.2 (Gate: -99.8 | Full: 98.4) [Task: instant]
+  Question: What visual symbol is displayed on the final screen to represent the accomplishment of the challenge?
+  Ref:      A large orange trophy icon appears in the center of the screen, accompanied by the text "WORKOUT COMPLETED", symbolically rewarding the user for finishing the session.
+  Full:     The final screen displays a trophy as the visual symbol representing the accomplishment of the challenge.
+  Gate:     The final screen displays a checkmark symbol to represent the accomplishment of the challenge.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -196.8 (Gate: -97.5 | Full: 99.3) [Task: instant]
+  Question: What do the different sound icons in the navigation audio settings represent?
+  Ref:      The menu presents three distinct icons corresponding to audio feedback levels. The top speaker with sound waves indicates full turn-by-turn instructions, the middle speaker with an exclamation mark signifies "important alerts only," and the bottom slashed speaker represents a completely muted state.
+  Full:     The different sound icons in the navigation audio settings represent various types of notifications or alerts.
+wrote results/iteration3/tables/audio_summary.csv (13 rows)
+wrote results/iteration3/tables/audio_by_task.csv (26 rows)
+wrote results/iteration3/tables/audio_paired.csv (12 rows)
+wrote results/iteration3/tables/audio_errors.csv (40 rows)
+  Gate:     The different sound icons in the navigation audio settings represent various functions such as navigation, search, and other specific actions.
+  Frames:   4/33 kept: [0, 8, 29, 32]
+
+  Delta: -196.3 (Gate: -99.9 | Full: 96.4) [Task: instant]
+  Question: Based on her introduction, what specific event is she preparing to attend?
+  Ref:      She states she is heading to see Tate McRae in concert at Madison Square Garden. She expresses excitement about bringing viewers along for the concert vlog.
+  Full:     She is preparing to attend a live phone camera stream.
+  Gate:     She is preparing to attend a conference.
+  Frames:   4/33 kept: [0, 16, 30, 32]
+
+  Delta: -163.8 (Gate: -100.0 | Full: 63.8) [Task: instant]
+  Question: What immediate physical reaction does the host show after taking a bite of the egg with toppings?
+  Ref:      Immediately after eating a spoonful of the egg covered in the red chili topping, she begins to cough and covers her mouth with her hand. She grimaces, exhales sharply, and verbally exclaims about the spiciness ("Ang hang!"), indicating she is overwhelmed by the heat.
+  Full:     The host chews the egg with toppings.
+  Gate:     The host shows no immediate physical reaction after taking a bite of the egg with toppings.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -149.0 (Gate: -49.1 | Full: 99.9) [Task: instant]
+  Question: Regarding the goat on the robot vacuum, what does it do when it finally gets off the device?
+  Ref:      After riding the robot vacuum for a few moments, the goat jumps off the robot vacuum.
+  Full:     The goat on the robot vacuum jumps off the device.
+  Gate:     The goat on the robot vacuum does not appear in the frames provided.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -106.9 (Gate: -99.9 | Full: 7.0) [Task: backward]
+  Question: According to the presenter, why might the caller feel more comfortable if the user employs the Airplane Mode method to reject a call?
+  Ref:      The presenter explains that rejecting a call via Airplane Mode makes it appear as if the call failed due to poor signal or connection issues (mentioned as "收訊不佳"), rather than the user actively pressing the decline button. She suggests this is psychologically more comfortable for the caller as they don't feel intentionally rejected.
+  Full:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it is a more polite and respectful way to handle the situation.
+  Gate:     The presenter suggests that the caller might feel more comfortable if the user employs the Airplane Mode method to reject a call because it provides a clear and direct way to signal that the call should be ended.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+
+  Delta: -88.0 (Gate: -95.1 | Full: -7.1) [Task: instant]
+  Question: Back in the Yidget app, which specific parts of the grid does she select to download?
+  Ref:      She selects the four squares located in the center of the grid. Specifically, she taps the two side squares in the third row and the two side squares in the fourth row, downloading the background images that correspond to the central 2x2 area where the apps will be placed.
+  Full:     She selects the specific parts of the grid by clicking on the download icons associated with each item.
+  Gate:     She selects the specific parts of the grid by clicking on the individual cells.
+  Frames:   4/33 kept: [0, 9, 22, 32]
+
+  Delta: -87.2 (Gate: -91.4 | Full: -4.2) [Task: backward]
+  Question: What event immediately interrupts the camera person's movement through the corridor at the beginning of the clip?
+  Ref:      At the very beginning of the footage, the camera suddenly tilts and shakes as the camera person collides with a young boy wearing a black jacket. The audio captures immediate apologies ("Bu hao yi si" meaning "Sorry") from the camera person.
+  Full:     The camera person is interrupted by a loud bang.
+  Gate:     The camera person is interrupted by a door opening.
+  Frames:   4/15 kept: [0, 5, 7, 14]
+
+  Delta: -80.0 (Gate: -99.2 | Full: -19.2) [Task: instant]
+  Question: At the exotic market, what does the food item on the banana leaf look like visually?
+  Ref:      It looks like a pile of small, white, puffed grains or beans mixed with some darker bits. These are actually weaver ant eggs. They appear soft and slightly translucent, resembling cooked barley or tiny white beans, clustered together on the green leaf.
+  Full:     The food item on the banana leaf at the exotic market appears to be a colorful and vibrant dish, possibly featuring various ingredients such as fruits, vegetables, and spices. The banana leaf itself adds a natural and rustic touch to the presentation.
+  Gate:     The food item on the banana leaf appears to be a type of leafy green vegetable.
+  Frames:   4/33 kept: [0, 1, 2, 32]
+

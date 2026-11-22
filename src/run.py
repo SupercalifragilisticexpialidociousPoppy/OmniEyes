@@ -24,7 +24,7 @@ Iteration 3 updates:
     --keep_current always sends the newest frame (the question moment) in every condition;
     --min_keep N tops the gate up to at least N frames, so the baselines get the same budget.
 """
-import argparse, glob, json, os, random, shutil, time
+import argparse, collections, glob, json, os, random, shutil, time
 import numpy as np
 import torch
 from transformers import AutoProcessor
@@ -41,18 +41,34 @@ PROMPT = ("You are watching a live phone camera stream. The frames shown end at 
 # speech output, and in the iteration 3 smoke test it made answers hedging and chatty.
 
 
-def resolve_video(root, v):
-    if os.path.isfile(v):
-        return v
-    p = os.path.join(root, v)
-    if os.path.isfile(p):
-        return p
-    for ext in ("", ".mp4"):
-        hits = glob.glob(os.path.join(root, "**", os.path.basename(v) + ext), recursive=True)
-        if hits:
-            return hits[0]
-    hits = glob.glob(os.path.join(root, "**", v.strip("/"), "**", "*.mp4"), recursive=True)
-    return hits[0] if hits else None
+def index_videos(root):
+    """All .mp4 files under root, as root-relative paths with '/' separators."""
+    files = glob.glob(os.path.join(root, "**", "*.mp4"), recursive=True)
+    return [os.path.relpath(f, root).replace(os.sep, "/") for f in files]
+
+
+def resolve_video(root, v, index):
+    """Find the file for annotation path v, or return None. Never guesses.
+
+    Every PhoStream video is named output_1.mp4, so matching on the file name alone picks
+    an unrelated video. (Iterations 1-3 did exactly that: every question was answered from
+    the same video.) A file only matches if the end of its path equals the end of the
+    annotation path, including at least the video's own folder, and exactly one file does.
+    That tolerates a renamed top-level archive folder, but never a different video.
+    """
+    v = v.replace("\\", "/").strip("/")
+    for cand in (v, os.path.join(root, v)):
+        if os.path.isfile(cand):
+            return cand
+    parts = v.split("/")
+    for k in range(1, len(parts) - 1):          # drop leading folders, keep >= folder + file
+        suffix = "/".join(parts[k:])
+        hits = [f for f in index if f == suffix or f.endswith("/" + suffix)]
+        if len(hits) == 1:
+            return os.path.join(root, hits[0])
+        if len(hits) > 1:
+            return None                         # ambiguous: refuse to guess
+    return None
 
 
 def is_omni(model_name):
@@ -139,8 +155,23 @@ def main():
     a = ap.parse_args()
 
     recs = [r for r in load_annotations(a.ann) if any(t in r["task"] for t in a.tasks)]
+    # Keep only questions whose own video is on disk, before sampling, so --n questions are
+    # really answered from their videos. Which questions are sampled therefore depends on
+    # which archives are downloaded: download all of them for the full question mix.
+    index = index_videos(a.video_root)
+    for r in recs:
+        r["video_file"] = resolve_video(a.video_root, r["video"], index)
+    missing = [r for r in recs if r["video_file"] is None]
+    recs = [r for r in recs if r["video_file"] is not None]
+    by_src = collections.Counter(r["video"].split("/")[0] for r in recs)
+    print(f"{len(index)} video files under {a.video_root}; {len(recs)} eligible QAs have their video "
+          f"({dict(by_src)}), {len(missing)} skipped (video not downloaded)")
+    if missing:
+        print(f"  e.g. no file for: {missing[0]['video']}")
+    if not recs:
+        raise SystemExit("no question has its video under --video_root: check the archive was extracted there")
     random.Random(a.seed).shuffle(recs)
-    print(f"{len(recs)} eligible QAs; running {min(a.n, len(recs))}")
+    print(f"running {min(a.n, len(recs))}")
 
     omni = is_omni(a.model)
     use_audio = omni and not a.no_audio
@@ -182,9 +213,7 @@ def main():
                 n_run += 1
                 continue
 
-        vp = resolve_video(a.video_root, r["video"])
-        if vp is None:
-            continue
+        vp = r["video_file"]
         try:
             frames, frames_np, frame_ts = read_window(vp, r["t"], a.window, a.fps, a.size)
         except Exception as e:
@@ -221,7 +250,7 @@ def main():
             conds[f"uniform@{tau}"] = select_uniform(N, len(kept), keep_current=a.keep_current)
             conds[f"pixel@{tau}"] = select_by_pixel_diff(frames_np, len(kept), keep_current=a.keep_current)
 
-        base = dict(qid=qid, video=r["video"], t=r["t"], task=r["task"], question=r["question"],
+        base = dict(qid=qid, video=r["video"], video_file=vp, t=r["t"], task=r["task"], question=r["question"],
                     answer=r["answer"], n_frames=N, k=a.k, gate_ms=g_mean * 1e3,
                     full_vit_ms=full_t * 1e3, resume_ms=resume_t * 1e3, model=a.model,
                     keep_current=a.keep_current, min_keep=a.min_keep,
