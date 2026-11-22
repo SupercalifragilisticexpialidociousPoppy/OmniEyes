@@ -1,6 +1,6 @@
 # OmniEyes: iteration 3 plans (working notes)
 
-Temporary folder for ideas discussed after iteration 2. Nothing here is implemented yet. Once an idea is built and tested, move what's left of it into the iteration 3 report and delete it from here.
+Working notes for ideas discussed after iteration 2. Iteration 3 implemented and evaluated the Omni migration (01, steps 1–4), the frame-selection fixes (02, ideas 2–3) and the timing fix (06); each file's status line says what is done. The rest is open, and `reports/Iteration3_Report.md` §9 lists what comes next.
 
 The project goal, from the proposal: make **omni models** (video + audio) understand streaming video better, more cheaply, or both. Iterations 1–2 used Qwen2-VL-2B (no audio) as a test bed. Iteration 3 moves to the real target.
 

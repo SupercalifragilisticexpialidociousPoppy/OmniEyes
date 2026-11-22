@@ -1,6 +1,6 @@
 # 02 · Which frames the gate keeps and sends
 
-**Status: ideas 2 and 3 implemented (iteration 3), not yet evaluated.**
+**Status: ideas 2 and 3 implemented and evaluated in iteration 3** (`reports/Iteration3_Report.md` §6: the gate now matches `full` on instant questions; gate, uniform and pixel get different frames).
 - `--keep_current` always sends the newest frame, in every condition.
 - `--min_keep N` tops the gate up to N frames by farthest-point selection on its block-K features. The baselines get the same budget.
 - Both are off by default, so iterations 1–2 stay reproducible. See `select_by_gate()` in `src/gate.py`.

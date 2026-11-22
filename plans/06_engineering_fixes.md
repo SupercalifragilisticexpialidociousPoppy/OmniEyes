@@ -5,7 +5,7 @@
 - **Evidence:** at the same timestamp, different videos always got identical frame selections (19/19, 23/23, 19/19 pairs), and no question after ~615 s got audio (the stand-in video's length).
 - **Not affected:** timing and token counts (they depend on frame counts), and the code-level findings (e.g. the gate keeping only the oldest frame).
 - **Fix (iteration 3):** `resolve_video()` matches the end of the folder path, never guesses, and returns nothing if the match is missing or ambiguous. `run.py` drops such questions before sampling and logs `video_file` in every row.
-- **To do:** download all four archives and re-run the iteration 3 audio and no-audio runs. Iterations 1–2 reports are left as submitted.
+- **Done:** all four archives downloaded and both iteration 3 runs repeated (`results/iteration3/`; the bugged run is in `results/iteration3-scrapped/`). Iterations 1–2 reports are left as submitted; `reports/Iteration3_Report.md` §3 explains the effect.
 
 
 ## 1. `resume_from_k` crash and the fake 50 ms

@@ -1,0 +1,338 @@
+Metric: ent_con (x100)
+condition             n   score  frames   ViT ms  ViT %ideal  ViT %act  tokens  LLM s
+full                150    19.9    32.5     3163        100%      100%    2845   3.16
+gate@0.88           150    12.5    14.0     1670         53%       58%    1266   1.81
+pixel@0.88          150     7.3    14.0     1358         43%       43%    1266   1.77
+uniform@0.88        150    -0.4    14.0     1358         43%       43%    1266   1.81
+gate@0.9            150     6.5    15.9     1831         58%       64%    1426   1.94
+pixel@0.9           150     7.5    15.9     1543         49%       49%    1426   1.94
+uniform@0.9         150     2.5    15.9     1543         49%       49%    1426   1.96
+gate@0.93           150     6.0    19.0     2092         66%       74%    1693   2.19
+pixel@0.93          150    13.0    19.0     1844         58%       58%    1693   2.17
+uniform@0.93        150    11.1    19.0     1844         58%       58%    1693   2.16
+gate@0.95           150    11.6    21.6     2313         73%       82%    1913   2.36
+pixel@0.95          150     9.3    21.6     2100         66%       66%    1913   2.37
+uniform@0.95        150     9.3    21.6     2100         66%       66%    1913   2.36
+
+Score by task (excluding parse failures):
+  full              backward=0.6(n=49)  instant=29.2(n=101)
+  gate@0.88         backward=0.4(n=49)  instant=18.3(n=101)
+  gate@0.9          backward=-9.8(n=49)  instant=14.5(n=101)
+  gate@0.93         backward=-7.1(n=49)  instant=12.4(n=101)
+  gate@0.95         backward=-0.7(n=49)  instant=17.5(n=101)
+  pixel@0.88        backward=-8.6(n=49)  instant=15.0(n=101)
+  pixel@0.9         backward=-15.5(n=49)  instant=18.6(n=101)
+  pixel@0.93        backward=-2.2(n=49)  instant=20.4(n=101)
+  pixel@0.95        backward=-6.4(n=49)  instant=17.0(n=101)
+  uniform@0.88      backward=-14.2(n=49)  instant=6.3(n=101)
+  uniform@0.9       backward=-4.4(n=49)  instant=5.9(n=101)
+  uniform@0.93      backward=-8.4(n=49)  instant=20.6(n=101)
+  uniform@0.95      backward=-2.8(n=49)  instant=15.1(n=101)
+
+Paired diff (gate - baseline), 95% bootstrap CI   (* = CI excludes 0):
+  gate@0.88          vs uniform@0.88        +12.8 [  +3.8,  +22.6] n=150  *
+  gate@0.88          vs pixel@0.88           +5.2 [  -2.4,  +12.9] n=150   
+  gate@0.88          vs full                 -7.4 [ -17.2,   +2.3] n=150   
+  gate@0.9           vs uniform@0.9          +4.0 [  -4.1,  +12.7] n=150   
+  gate@0.9           vs pixel@0.9            -1.0 [  -8.4,   +6.2] n=150   
+  gate@0.9           vs full                -13.4 [ -22.1,   -4.7] n=150  *
+  gate@0.93          vs uniform@0.93         -5.1 [ -13.2,   +2.8] n=150   
+  gate@0.93          vs pixel@0.93           -7.0 [ -14.3,   +0.3] n=150   
+  gate@0.93          vs full                -13.9 [ -22.4,   -6.4] n=150  *
+  gate@0.95          vs uniform@0.95         +2.3 [  -7.0,  +11.4] n=150   
+  gate@0.95          vs pixel@0.95           +2.2 [  -2.8,   +7.9] n=150   
+  gate@0.95          vs full                 -8.3 [ -16.0,   -0.9] n=150  *
+
+=== ERROR ANALYSIS: 10 WORST DROPS VS FULL ===
+
+--- Condition gate@0.88 vs full (showing largest drops) ---
+  Delta: -199.4 (Gate: -99.8 | Full: 99.6) [Task: instant]
+  Question: Following her instructions, what specific control is she adding to the Control Center list?
+  Ref:      She is adding the "Screen Recording" control. In the settings menu, she locates it under "More Controls" and taps the green plus sign to move it up to the "Included Controls" section.
+  Full:     Screen recording.
+  Gate:     The specific control she is adding to the Control Center list is the "Airpods Pro" control.
+  Frames:   4/33 kept: [0, 19, 21, 32]
+
+  Delta: -199.3 (Gate: -99.6 | Full: 99.7) [Task: instant]
+  Question: What is written on the handmade cardboard sign?
+  Ref:      A close-up of a handmade sign appears. The sign, written in black marker on a piece of cardboard, clearly reads "MY 1st SHOW".
+  Full:     The handmade cardboard sign says "My 1st show".
+  Gate:     The handmade cardboard sign says "My 1st show made a sign for fun didn't bring it lol".
+  Frames:   28/33 kept: [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 13, 14, 15, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32]
+
+  Delta: -198.9 (Gate: -100.0 | Full: 98.9) [Task: instant]
+  Question: Later in the kitchen, she presents a large black tub of protein powder. What specific flavor name is printed on the label?
+  Ref:      The large black tub she holds up has a label where the text "Vanilla Cupcake" is visible, identifying the flavor of the isolate protein.
+  Full:     The flavor name printed on the label is "Vanilla."
+  Gate:     The flavor name printed on the label is 'BANANA BROWNIE'.
+  Frames:   4/33 kept: [0, 13, 17, 32]
+
+  Delta: -198.7 (Gate: -99.3 | Full: 99.4) [Task: instant]
+  Question: In the notification pause menu for the messaging app, what is the specific duration option listed for pausing notifications until the morning?
+  Ref:      The pop-up menu displays the option "Pause until 8 AM" (shown in Chinese characters as "暫停至早上8點") below the option for pausing for 1 hour.
+  Full:     The specific duration option listed for pausing notifications until the morning is 8 hours.
+  Gate:     The specific duration option listed for pausing notifications until the morning is 12 hours.
+  Frames:   6/33 kept: [0, 16, 18, 22, 26, 32]
+
+  Delta: -198.2 (Gate: -99.7 | Full: 98.4) [Task: instant]
+  Question: What specific method is presented on the screen for sharing a created routine?
+  Ref:      The screen displays a clear menu option labeled "Share via QR code," and clicking it opens a page titled "Share via QR code" where routines can be selected.
+  Full:     The screen shows the method of sharing a created routine via QR code.
+  Gate:     The specific method presented on the screen for sharing a created routine is through Bluetooth.
+  Frames:   4/33 kept: [0, 20, 23, 32]
+
+  Delta: -197.7 (Gate: -99.9 | Full: 97.8) [Task: instant]
+  Question: What is happening in this clip?
+  Ref:      A person is walking while carrying a small, fluffy Pomeranian in a backpack or carrier.
+  Full:     In this video clip, we see a dog wearing a life jacket standing on a colorful inflatable raft in the water. The dog appears to be enjoying itself, possibly on a fun outing or adventure. The scene captures the playful and adventurous spirit of the dog as it navigates the water on the inflatable raft.
+  Gate:     In this clip, a dog is standing on a beach towel in the water.
+  Frames:   15/33 kept: [0, 2, 3, 5, 7, 8, 9, 11, 13, 14, 15, 16, 17, 19, 32]
+
+  Delta: -103.3 (Gate: -7.9 | Full: 95.3) [Task: instant]
+  Question: How many repetitions of the Side Bends are completed in the first set?
+  Ref:      The counter in the top right corner of the screen shows '30/30' as the exercise concludes, and the female voiceover counts each repetition up to thirty.
+  Full:     30
+  Gate:     23
+  Frames:   4/33 kept: [0, 5, 28, 32]
+
+  Delta: -100.2 (Gate: -0.3 | Full: 99.9) [Task: backward]
+  Question: Despite setting the link expiration to "Never", what warning does the host give regarding the invite link?
+  Ref:      Immediately after setting the expiration to "Never", the host verbally warns that technical issues or sharing reports suggest the link might still occasionally fail or become invalid. Consequently, she advises users to personally test the link to ensure it works before sending it out, to avoid wasted effort.
+  Full:     The host warns that even if the link expiration is set to "Never", it can still fail sometimes.
+  Gate:     The host warns that even though the link expiration is set to "Never", the invite link is still subject to network restrictions.
+  Frames:   4/33 kept: [0, 10, 19, 32]
+
+  Delta: -100.0 (Gate: -99.9 | Full: 0.1) [Task: backward]
+  Question: How does the presenter describe the visual appearance of the phone she is holding relative to its official color name?
+  Ref:      The presenter holds the phone up and explicitly asks viewers to guess the color. She states that while it is actually the blue model, seeing it in person makes her feel it looks "really like white," noting how pale the non-black colors are this year.
+  Full:     The presenter describes the visual appearance of the phone as being a bit different from its official color name, specifically mentioning that it has a blue metallic frame.
+  Gate:     The presenter describes the phone as having a golden color, which is different from its official color name.
+  Frames:   5/33 kept: [0, 3, 10, 21, 32]
+
+  Delta: -99.9 (Gate: -0.0 | Full: 99.9) [Task: instant]
+  Question: What does the man in the maroon t-shirt look like?
+  Ref:      He appears to be a young adult male with short dark hair and a beard. He is wearing a maroon t-shirt and is sitting in a home office environment with a desk, laptop, lamp, and shelves visible in the background.
+  Full:     The man in the maroon t-shirt has a beard.
+  Gate:     The man in the maroon t-shirt has a beard and is wearing a watch.
+  Frames:   4/33 kept: [0, 14, 25, 32]
+
+
+--- Condition gate@0.9 vs full (showing largest drops) ---
+  Delta: -199.4 (Gate: -99.8 | Full: 99.6) [Task: instant]
+  Question: Following her instructions, what specific control is she adding to the Control Center list?
+  Ref:      She is adding the "Screen Recording" control. In the settings menu, she locates it under "More Controls" and taps the green plus sign to move it up to the "Included Controls" section.
+  Full:     Screen recording.
+  Gate:     The specific control she is adding to the Control Center list is the "Airpods" control.
+  Frames:   6/33 kept: [0, 12, 20, 24, 27, 32]
+
+  Delta: -199.3 (Gate: -99.6 | Full: 99.7) [Task: instant]
+  Question: What is written on the handmade cardboard sign?
+  Ref:      A close-up of a handmade sign appears. The sign, written in black marker on a piece of cardboard, clearly reads "MY 1st SHOW".
+  Full:     The handmade cardboard sign says "My 1st show".
+  Gate:     The handmade cardboard sign says "My 1st show made a sign for fun didn't bring it lol".
+  Frames:   28/33 kept: [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 13, 14, 15, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32]
+
+  Delta: -198.2 (Gate: -99.7 | Full: 98.4) [Task: instant]
+  Question: What specific method is presented on the screen for sharing a created routine?
+  Ref:      The screen displays a clear menu option labeled "Share via QR code," and clicking it opens a page titled "Share via QR code" where routines can be selected.
+  Full:     The screen shows the method of sharing a created routine via QR code.
+  Gate:     The specific method presented on the screen for sharing a created routine is through Bluetooth.
+  Frames:   4/33 kept: [0, 20, 23, 32]
+
+  Delta: -197.6 (Gate: -99.9 | Full: 97.8) [Task: instant]
+  Question: What is happening in this clip?
+  Ref:      A person is walking while carrying a small, fluffy Pomeranian in a backpack or carrier.
+  Full:     In this video clip, we see a dog wearing a life jacket standing on a colorful inflatable raft in the water. The dog appears to be enjoying itself, possibly on a fun outing or adventure. The scene captures the playful and adventurous spirit of the dog as it navigates the water on the inflatable raft.
+  Gate:     In this clip, a dog is standing on a beach towel.
+  Frames:   18/33 kept: [0, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 32]
+
+  Delta: -103.3 (Gate: -7.9 | Full: 95.3) [Task: instant]
+  Question: How many repetitions of the Side Bends are completed in the first set?
+  Ref:      The counter in the top right corner of the screen shows '30/30' as the exercise concludes, and the female voiceover counts each repetition up to thirty.
+  Full:     30
+  Gate:     23
+  Frames:   4/33 kept: [0, 5, 28, 32]
+
+  Delta: -101.9 (Gate: -99.8 | Full: 2.2) [Task: instant]
+  Question: Describe the scenery visible through the window while she was on the bus.
+  Ref:      The view from the bus features a long, historic stone fortress wall stretching across a grassy hill. It contrasts with the modern road and city environment. The sky is blue and the wall is surrounded by green trees and a well-maintained lawn, looking like a park or historical site.
+  Full:     The scenery visible through the window while she was on the bus was a park.
+  Gate:     The scenery visible through the window while she was on the bus was a cityscape.
+  Frames:   28/33 kept: [0, 2, 4, 5, 6, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+
+  Delta: -100.2 (Gate: -0.3 | Full: 99.9) [Task: backward]
+  Question: Despite setting the link expiration to "Never", what warning does the host give regarding the invite link?
+  Ref:      Immediately after setting the expiration to "Never", the host verbally warns that technical issues or sharing reports suggest the link might still occasionally fail or become invalid. Consequently, she advises users to personally test the link to ensure it works before sending it out, to avoid wasted effort.
+  Full:     The host warns that even if the link expiration is set to "Never", it can still fail sometimes.
+  Gate:     The host warns that even though the link expiration is set to "Never", the invite link is still subject to network restrictions.
+  Frames:   4/33 kept: [0, 10, 19, 32]
+
+  Delta: -100.0 (Gate: -1.2 | Full: 98.8) [Task: backward]
+  Question: What occurs immediately after the hand interacts with the phone screen in the opening demonstration?
+  Ref:      In the opening scene, an alarm screen is shown. A hand taps to stop the alarm, and immediately after, a synthesized voice begins speaking, providing a summary of the day's weather forecast including temperature and conditions.
+  Full:     Immediately after the hand interacts with the phone screen in the opening demonstration, the weather forecast is automatically broadcasted.
+  Gate:     The screen changes to a list of times.
+  Frames:   5/33 kept: [0, 2, 7, 17, 32]
+
+  Delta: -100.0 (Gate: -99.9 | Full: 0.1) [Task: backward]
+  Question: How does the presenter describe the visual appearance of the phone she is holding relative to its official color name?
+  Ref:      The presenter holds the phone up and explicitly asks viewers to guess the color. She states that while it is actually the blue model, seeing it in person makes her feel it looks "really like white," noting how pale the non-black colors are this year.
+  Full:     The presenter describes the visual appearance of the phone as being a bit different from its official color name, specifically mentioning that it has a blue metallic frame.
+  Gate:     The presenter describes the phone as having a golden color, which is different from its official color name.
+  Frames:   5/33 kept: [0, 3, 10, 21, 32]
+
+  Delta: -99.9 (Gate: -0.0 | Full: 99.9) [Task: instant]
+  Question: What does the man in the maroon t-shirt look like?
+  Ref:      He appears to be a young adult male with short dark hair and a beard. He is wearing a maroon t-shirt and is sitting in a home office environment with a desk, laptop, lamp, and shelves visible in the background.
+  Full:     The man in the maroon t-shirt has a beard.
+  Gate:     The man in the maroon t-shirt has a beard and is wearing a watch.
+  Frames:   4/33 kept: [0, 14, 25, 32]
+
+
+--- Condition gate@0.93 vs full (showing largest drops) ---
+  Delta: -198.9 (Gate: -100.0 | Full: 98.9) [Task: instant]
+  Question: Later in the kitchen, she presents a large black tub of protein powder. What specific flavor name is printed on the label?
+  Ref:      The large black tub she holds up has a label where the text "Vanilla Cupcake" is visible, identifying the flavor of the isolate protein.
+  Full:     The flavor name printed on the label is "Vanilla."
+  Gate:     The flavor name printed on the label is "Chocolate."
+  Frames:   20/33 kept: [0, 4, 6, 7, 9, 10, 11, 13, 15, 16, 17, 18, 19, 20, 21, 24, 25, 26, 31, 32]
+
+  Delta: -198.7 (Gate: -99.3 | Full: 99.4) [Task: instant]
+  Question: In the notification pause menu for the messaging app, what is the specific duration option listed for pausing notifications until the morning?
+  Ref:      The pop-up menu displays the option "Pause until 8 AM" (shown in Chinese characters as "暫停至早上8點") below the option for pausing for 1 hour.
+  Full:     The specific duration option listed for pausing notifications until the morning is 8 hours.
+  Gate:     The specific duration option listed for pausing notifications until the morning is 12 hours.
+  Frames:   16/33 kept: [0, 2, 7, 12, 15, 16, 17, 18, 20, 21, 22, 24, 26, 27, 28, 32]
+
+  Delta: -198.5 (Gate: -99.7 | Full: 98.8) [Task: backward]
+  Question: What occurs immediately after the hand interacts with the phone screen in the opening demonstration?
+  Ref:      In the opening scene, an alarm screen is shown. A hand taps to stop the alarm, and immediately after, a synthesized voice begins speaking, providing a summary of the day's weather forecast including temperature and conditions.
+  Full:     Immediately after the hand interacts with the phone screen in the opening demonstration, the weather forecast is automatically broadcasted.
+  Gate:     Immediately after the hand interacts with the phone screen in the opening demonstration, a list of alarms appears.
+  Frames:   13/33 kept: [0, 2, 3, 5, 6, 8, 9, 13, 15, 18, 20, 23, 32]
+
+  Delta: -186.0 (Gate: -92.9 | Full: 93.1) [Task: instant]
+  Question: During the volleyball game, how is a point scored in the rally shown?
+  Ref:      The rally shows the ball being set, a player jumps to spike it, and a player on the opposing team in a blue jersey (number 89) dives to the ground in an attempt to save it, but the ball touches the ground, resulting in a point.
+  Full:     The point is shown by the ball hitting the ground.
+  Gate:     The ball hits the net and goes over the net.
+  Frames:   29/33 kept: [0, 1, 2, 3, 4, 6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32]
+
+  Delta: -128.6 (Gate: -97.1 | Full: 31.6) [Task: instant]
+  Question: Based on the rest timer, what is the next exercise after Arm Circles, and what is the woman's starting posture for it?
+  Ref:      After the rest period, the screen introduces 'Knee Raises' as the next exercise. The animated woman demonstrates the starting position by standing with her feet spread apart and placing her hands behind her head.
+  Full:     The next exercise after Arm Circles is Knee Raises. The woman's starting posture for Knee Raises is standing with her hands on her head.
+  Gate:     The next exercise after Arm Circles is Knee Raises. The woman's starting posture for this exercise is standing with her arms raised above her head.
+  Frames:   5/33 kept: [0, 8, 9, 10, 32]
+
+  Delta: -103.3 (Gate: -7.9 | Full: 95.3) [Task: instant]
+  Question: How many repetitions of the Side Bends are completed in the first set?
+  Ref:      The counter in the top right corner of the screen shows '30/30' as the exercise concludes, and the female voiceover counts each repetition up to thirty.
+  Full:     30
+  Gate:     23
+  Frames:   4/33 kept: [0, 5, 28, 32]
+
+  Delta: -100.1 (Gate: -0.2 | Full: 99.9) [Task: backward]
+  Question: Despite setting the link expiration to "Never", what warning does the host give regarding the invite link?
+  Ref:      Immediately after setting the expiration to "Never", the host verbally warns that technical issues or sharing reports suggest the link might still occasionally fail or become invalid. Consequently, she advises users to personally test the link to ensure it works before sending it out, to avoid wasted effort.
+  Full:     The host warns that even if the link expiration is set to "Never", it can still fail sometimes.
+  Gate:     The host warns that the invite link is still subject to the server's limit.
+  Frames:   4/33 kept: [0, 8, 29, 32]
+
+  Delta: -100.0 (Gate: -99.9 | Full: 0.1) [Task: backward]
+  Question: How does the presenter describe the visual appearance of the phone she is holding relative to its official color name?
+  Ref:      The presenter holds the phone up and explicitly asks viewers to guess the color. She states that while it is actually the blue model, seeing it in person makes her feel it looks "really like white," noting how pale the non-black colors are this year.
+  Full:     The presenter describes the visual appearance of the phone as being a bit different from its official color name, specifically mentioning that it has a blue metallic frame.
+  Gate:     The presenter describes the phone as having a golden color, which is different from its official color name.
+  Frames:   6/33 kept: [0, 3, 10, 21, 26, 32]
+
+  Delta: -99.9 (Gate: -0.0 | Full: 99.9) [Task: instant]
+  Question: What does the man in the maroon t-shirt look like?
+  Ref:      He appears to be a young adult male with short dark hair and a beard. He is wearing a maroon t-shirt and is sitting in a home office environment with a desk, laptop, lamp, and shelves visible in the background.
+  Full:     The man in the maroon t-shirt has a beard.
+  Gate:     The man in the maroon t-shirt has a beard and is wearing a watch.
+  Frames:   4/33 kept: [0, 14, 25, 32]
+
+  Delta: -99.6 (Gate: -0.0 | Full: 99.6) [Task: instant]
+  Question: In the Shortcuts app, why does she specifically change the format setting to AIFF?
+  Ref:      She selects AIFF because it is an uncompressed format. She explicitly changes the setting from M4A to AIFF to ensure the audio quality is not compromised by compression during the conversion process.
+  Full:     She changes the format setting to AIFF because it won't compress the file.
+  Gate:     She changes the format setting to AIFF because it is the preferred audio file format for her.
+  Frames:   7/33 kept: [0, 11, 17, 20, 26, 28, 32]
+
+
+--- Condition gate@0.95 vs full (showing largest drops) ---
+  Delta: -198.9 (Gate: -100.0 | Full: 98.9) [Task: instant]
+  Question: Later in the kitchen, she presents a large black tub of protein powder. What specific flavor name is printed on the label?
+  Ref:      The large black tub she holds up has a label where the text "Vanilla Cupcake" is visible, identifying the flavor of the isolate protein.
+  Full:     The flavor name printed on the label is "Vanilla."
+  Gate:     The flavor name printed on the label is "Caramel."
+  Frames:   29/33 kept: [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 31, 32]
+
+  Delta: -186.8 (Gate: -93.8 | Full: 93.1) [Task: instant]
+  Question: During the volleyball game, how is a point scored in the rally shown?
+  Ref:      The rally shows the ball being set, a player jumps to spike it, and a player on the opposing team in a blue jersey (number 89) dives to the ground in an attempt to save it, but the ball touches the ground, resulting in a point.
+  Full:     The point is shown by the ball hitting the ground.
+  Gate:     The point is scored when the ball lands out of bounds.
+  Frames:   30/33 kept: [0, 1, 2, 3, 4, 6, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+
+  Delta: -142.1 (Gate: -42.2 | Full: 99.9) [Task: backward]
+  Question: Despite setting the link expiration to "Never", what warning does the host give regarding the invite link?
+  Ref:      Immediately after setting the expiration to "Never", the host verbally warns that technical issues or sharing reports suggest the link might still occasionally fail or become invalid. Consequently, she advises users to personally test the link to ensure it works before sending it out, to avoid wasted effort.
+  Full:     The host warns that even if the link expiration is set to "Never", it can still fail sometimes.
+  Gate:     The host warns that even though the link expiration is set to "Never", there is still a limit to how many times the invite link can be used.
+  Frames:   4/33 kept: [0, 5, 19, 32]
+
+  Delta: -128.8 (Gate: -31.1 | Full: 97.8) [Task: instant]
+  Question: What is happening in this clip?
+  Ref:      A person is walking while carrying a small, fluffy Pomeranian in a backpack or carrier.
+wrote results/iteration3/tables/noaudio_summary.csv (13 rows)
+wrote results/iteration3/tables/noaudio_by_task.csv (26 rows)
+wrote results/iteration3/tables/noaudio_paired.csv (12 rows)
+wrote results/iteration3/tables/noaudio_errors.csv (40 rows)
+  Full:     In this video clip, we see a dog wearing a life jacket standing on a colorful inflatable raft in the water. The dog appears to be enjoying itself, possibly on a fun outing or adventure. The scene captures the playful and adventurous spirit of the dog as it navigates the water on the inflatable raft.
+  Gate:     In this video clip, a dog is seen standing on a colorful inflatable raft in the water. The dog appears to be enjoying itself, looking around and wagging its tail. The scene then transitions to another dog being held by a person outdoors. The person is wearing a black jacket, and the dog is perched on
+  Frames:   32/33 kept: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+
+  Delta: -128.6 (Gate: -97.1 | Full: 31.6) [Task: instant]
+  Question: Based on the rest timer, what is the next exercise after Arm Circles, and what is the woman's starting posture for it?
+  Ref:      After the rest period, the screen introduces 'Knee Raises' as the next exercise. The animated woman demonstrates the starting position by standing with her feet spread apart and placing her hands behind her head.
+  Full:     The next exercise after Arm Circles is Knee Raises. The woman's starting posture for Knee Raises is standing with her hands on her head.
+  Gate:     The next exercise after Arm Circles is Knee Raises. The woman's starting posture for this exercise is standing with her arms raised above her head.
+  Frames:   5/33 kept: [0, 2, 9, 10, 32]
+
+  Delta: -127.7 (Gate: -27.8 | Full: 99.9) [Task: instant]
+  Question: During the account registration process demonstrated on the desktop browser, what specific task does the security verification (captcha) require the user to perform?
+  Ref:      After clicking continue on the sign-up form, a captcha window pops up asking the user to "Please click each image containing a motorcycle". The user then selects the grid squares that contain parts of a motorcycle to verify they are human.
+  Full:     The security verification (captcha) requires the user to select images containing motorcycles.
+  Gate:     The security verification (captcha) requires the user to click on each image containing a moving object.
+  Frames:   8/33 kept: [0, 1, 6, 8, 21, 26, 28, 32]
+
+  Delta: -103.3 (Gate: -7.9 | Full: 95.3) [Task: instant]
+  Question: How many repetitions of the Side Bends are completed in the first set?
+  Ref:      The counter in the top right corner of the screen shows '30/30' as the exercise concludes, and the female voiceover counts each repetition up to thirty.
+  Full:     30
+  Gate:     23
+  Frames:   4/33 kept: [0, 5, 29, 32]
+
+  Delta: -99.9 (Gate: -0.0 | Full: 99.9) [Task: instant]
+  Question: What does the man in the maroon t-shirt look like?
+  Ref:      He appears to be a young adult male with short dark hair and a beard. He is wearing a maroon t-shirt and is sitting in a home office environment with a desk, laptop, lamp, and shelves visible in the background.
+  Full:     The man in the maroon t-shirt has a beard.
+  Gate:     The man in the maroon t-shirt has a beard and is wearing a watch.
+  Frames:   4/33 kept: [0, 14, 25, 32]
+
+  Delta: -98.9 (Gate: 0.7 | Full: 99.6) [Task: instant]
+  Question: What is this ancient wonder, located on a plateau near a modern city?
+  Ref:      A graphic identifies the location as the 'PYRAMIDS OF GIZA' in 'EGYPT.' The visuals confirm this with sweeping shots of the iconic pyramids in a desert landscape, with a city visible nearby, and the narrator calls them one of the 'greatest wonders of the ancient world.'
+  Full:     The ancient wonder located on a plateau near a modern city is the Pyramids of Giza.
+  Gate:     The ancient wonder located on a plateau near a modern city is the Great Pyramid of Giza.
+  Frames:   27/33 kept: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 24, 26, 27, 30, 31, 32]
+
+  Delta: -98.0 (Gate: -0.1 | Full: 97.9) [Task: instant]
+  Question: What specific preparation are the participants in the foreground making?
+  Ref:      They are adjusting a blue strip of cloth tied around their ankles. A woman stands next to her partner and holds the band connecting their legs, ensuring it is secure for the cooperative activity.
+  Full:     The participants in the foreground are tying their legs together.
+  Gate:     The participants in the foreground are preparing for a game of soccer.
+  Frames:   31/33 kept: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+

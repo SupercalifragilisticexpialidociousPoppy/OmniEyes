@@ -4,9 +4,19 @@ OmniEyes (idea H18 in the 2C2/Final Submission ranking) tests whether a streamin
 
 Each question is answered under 13 conditions. The gate is compared with all frames (`full`), and with two cheap ways of picking the same number of frames: evenly spaced (`uniform`) and by pixel change (`pixel`). Answers are graded locally with an NLI model, with no API calls.
 
-- **Results and conclusions:** `reports/Iteration2_Report.md` (iteration 1: `reports/Iteration1_Report.md`)
-- **Known problems and suggested fixes (not yet implemented):** `reports/ITERATION2_REVIEW.md`
-- **Ideas for iteration 3 (moving to an Omni model with audio, better frame selection, and more):** `plans/`
+- **Results and conclusions:** `reports/Iteration3_Report.md` (earlier: `reports/Iteration2_Report.md`, `reports/Iteration1_Report.md`)
+- **Important:** iterations 1–2 answered every question from the same video, because of a video-lookup bug found and fixed in iteration 3. Their accuracy numbers are not valid; their timing and token numbers are. See `reports/Iteration3_Report.md` §3.
+- **Code review of iteration 2:** `reports/ITERATION2_REVIEW.md`
+- **Ideas not yet implemented (frame selection, resolution, time alignment, evaluation):** `plans/`
+
+## The approach (iteration 3)
+For each question asked at time *t* in a video:
+1. **Window:** take the 16 s before *t*: ~33 frames at 2 frames per second, plus the audio of the same 16 s. Nothing after *t* is used.
+2. **Gate:** run every frame through only the first 3 of the 32 vision-encoder blocks (about 16% of a full pass). Keep a frame if its features differ enough from the last kept frame (mean cosine similarity below τ).
+3. **Fixes added in iteration 3:** the newest frame (the question moment) is always kept, and at least 4 frames are kept, topped up with the frames most different from those already kept.
+4. **Answer:** Qwen2.5-Omni-3B gets the kept frames with their timestamps, the full audio clip (never gated) and the question.
+
+The gate is compared with sending all frames (`full`), and with two cheap ways of picking the same number of frames: evenly spaced (`uniform`) and largest pixel change (`pixel`). Each is tested with and without audio.
 
 Hardware: the model runs need a Colab GPU: a **T4** (16 GB, fp16) works, and an **L4 or A100** (bf16) is better. An RTX 3050 (4–8 GB) is too small, and Colab's TPU runtime is not supported. Grading and analysis run on any machine (grading is much faster on a GPU).
 
@@ -17,7 +27,7 @@ Hardware: the model runs need a Colab GPU: a **T4** (16 GB, fp16) works, and an 
 ```
 OmniEyes/
 ├── README.md                     this file
-├── plans/                        working notes for iteration 3 (ideas, not implemented)
+├── plans/                        working notes: ideas for later iterations (status at the top of each file)
 ├── src/                          all code (run every command from the repository root)
 │   ├── run.py                    main experiment: answers each question under every condition
 │   ├── gate.py                   the early-layer gate and the three frame selectors
@@ -31,6 +41,7 @@ OmniEyes/
 ├── reports/
 │   ├── Iteration1_Report.md
 │   ├── Iteration2_Report.md
+│   ├── Iteration3_Report.md      Omni + audio, the video-bug fix, current results
 │   └── ITERATION2_REVIEW.md      code review notes and iteration 3 suggestions
 ├── results/
 │   ├── iteration1/               τ ∈ {0.90, 0.95}, instant + backward, no timestamps
@@ -45,7 +56,14 @@ OmniEyes/
 │   │   ├── judged_v2_k3.jsonl    the same rows, NLI-graded (large model)
 │   │   ├── labels_v2.csv         60 fresh hand labels for re-validating the grader
 │   │   └── tables/               CSV and text output of analyze.py (see tables/README.md)
-│   └── iteration3/               Qwen2.5-Omni-3B runs (copied in from Drive; see step 11)
+│   ├── iteration3/               Qwen2.5-Omni-3B, instant + backward, --keep_current --min_keep 4
+│   │   ├── Task4_Ite3.ipynb      the Colab notebook that produced these files
+│   │   ├── omni_smoke.jsonl      3-question smoke test
+│   │   ├── results_v3_k3.jsonl   model answers with audio, 150 questions × 13 conditions
+│   │   ├── results_v3_k3_noaudio.jsonl  the same questions, video only (--no_audio)
+│   │   ├── judged_v3_k3*.jsonl   the same rows, NLI-graded (large model)
+│   │   └── tables/               output of analyze.py and compare_audio.py (see tables/README.md)
+│   └── iteration3-scrapped/      first iteration 3 run, made with the video bug (kept for the record; invalid)
 └── archive/                      superseded one-off files, kept for the record
 ```
 
@@ -70,7 +88,7 @@ It writes one JSON line per (question, condition), containing:
 
 If Colab disconnects, re-running the same command skips finished (question, condition) pairs.
 
-Each question is answered only from its **own** video. All PhoStream videos are named `output_1.mp4`, so `resolve_video()` matches on the folder path, never on the file name alone. Questions whose video isn't downloaded, or whose match is ambiguous, are skipped before sampling. Each output row records the file used (`video_file`). Iterations 1–3 lacked this check, and every question was answered from the same video (see `plans/06_engineering_fixes.md`).
+Each question is answered only from its **own** video. All PhoStream videos are named `output_1.mp4`, so `resolve_video()` matches on the folder path, never on the file name alone. Questions whose video isn't downloaded, or whose match is ambiguous, are skipped before sampling. Each output row records the file used (`video_file`). Iterations 1–2 and the first iteration 3 run lacked this check, and every question was answered from the same video (see `reports/Iteration3_Report.md` §3).
 
 Main options:
 
@@ -167,6 +185,21 @@ Builds a tiny random Qwen2-VL vision tower on CPU. It checks early exit, the spl
 
 Run every command from the repository root. Lines starting with `!` or `%` go in Colab cells.
 
+**Reproducing from the notebook:** `results/iteration3/Task4_Ite3.ipynb` is the notebook that produced the iteration 3 results. Upload it to Colab and run the cells in order. Its cells follow the steps below:
+
+| Notebook cells | Step |
+|---|---|
+| 0–2 | 1. Get the code (cell 2 checks the video-lookup fix is present: it must print `1`) |
+| 3 | 2. Install |
+| 4, 6–10 | 3. Download and extract the videos. **Cell 4's extraction line is broken** (the loop was pasted twice, giving a bash syntax error), so nothing is extracted there. Cell 7 does the extraction, and cell 9 deletes the archives. Using step 3 below instead avoids the detour. |
+| 5 | 4. Check the setup |
+| 11 | 5. Mount Google Drive |
+| 12–13 | 6. Smoke test and printout |
+| 14–15 | 7. Full runs, with and without audio |
+| 16–17 | 8. Grade both runs |
+
+Steps 9 (analysis) and 11 were done locally after downloading the Drive folder. The whole notebook takes about 3–4 hours on a T4.
+
 ### 0. Pick a GPU runtime
 **Runtime → Change runtime type → T4 GPU** (or L4 / A100 if your plan has them). The TPU runtime will not work: the code is written for NVIDIA GPUs.
 
@@ -185,6 +218,7 @@ In a new session after a disconnect, run `%cd /content/OmniEyes` and `!git pull`
 - `transformers` must be recent: Qwen2.5-Omni support is new. If you see `KeyError: 'qwen2_5_omni'`, the upgrade didn't take effect. Use **Runtime → Restart session**, then continue from step 3.
 - `decord` reads video frames. `sentence-transformers` and `scipy` are only for grading (steps 8–10).
 - `ffmpeg`, used to read the audio, is already installed on Colab.
+- `transformers` is not pinned. Record the version you ran with (`!pip show transformers | head -2`): newer versions may change how many tokens a video frame uses (the run logs a `cap_pixels_per_frame` warning about this).
 
 ### 3. Download the dataset (all four video archives)
 PhoStream's questions come from four video sources, each a separate archive: EgoBlind, phone_class, record_file and youtube_dl (about 12 GB in total). `run.py` only uses questions whose own video is downloaded, so download all four to get the full question mix.
@@ -195,8 +229,12 @@ from huggingface_hub import list_repo_files
 print([f for f in list_repo_files("lucky-lance/PhoStream", repo_type="dataset") if f.endswith(".tar.gz")])
 # download every archive, then extract each one and delete the .tar.gz to save disk
 !hf download lucky-lance/PhoStream --repo-type dataset --include "*.tar.gz" --local-dir videos
-!cd videos && for f in *.tar.gz; do echo "extracting $f"; tar -xf "$f" && rm "$f"; done
+!cd videos && for f in *.tar.gz; do echo "extracting $f"; tar -xzf "$f" && rm "$f"; done
+!rm -rf videos/.cache
+!find videos -name '*.mp4' | wc -l          # should print 579
 ```
+- Run the extraction loop as its own line, exactly as above. If `find` prints 0, the archives are still there unextracted: run the loop again.
+- Warnings like `Ignoring unknown extended header keyword 'SCHILY.fflags'` or `'LIBARCHIVE.xattr…'` are harmless: the archives were made on a Mac.
 - To download only some sources, replace `--include "*.tar.gz"` with one archive name from the printed list (e.g. `phone_class_reencoded_2fps.tar.gz`). `run.py` then samples only from those sources.
 - On an older `huggingface_hub`, the command is `huggingface-cli download` instead of `hf download`.
 - Colab deletes `videos/` when the session ends. Re-downloading takes a few minutes, which is faster than keeping 12 GB on Google Drive.
@@ -225,19 +263,29 @@ drive.mount('/content/drive')
 ### 6. Smoke test: 3 questions, 1 τ
 ```bash
 !python src/run.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos \
-  --n 3 --taus 0.90 --tasks instant backward \
+  --n 3 --taus 0.90 --tasks instant backward --keep_current --min_keep 4 \
   --out /content/drive/MyDrive/OmniEyes/iteration3/omni_smoke.jsonl
 ```
 The first run downloads the model (about 10 GB). Check:
-1. The startup line says `model: Qwen/Qwen2.5-Omni-3B | audio: on, 16000 Hz`.
-2. It prints one `[i/3]` progress line per question.
-3. The answers look sensible:
+1. The startup line says `model: Qwen/Qwen2.5-Omni-3B | audio: on, 16000 Hz`, followed by how many questions found their own video (about 2,760 of 2,770 with all four archives).
+2. It prints one `[i/3]` progress line per question, with the gate's frame count (it should vary between questions, e.g. 14, 4, 31).
+3. Each question uses a different video, and the answers relate to the questions:
 ```python
 import json
+from collections import defaultdict
+rows = defaultdict(list)
 for l in open('/content/drive/MyDrive/OmniEyes/iteration3/omni_smoke.jsonl'):
-    r = json.loads(l); print(r['cond'], r['n_kept'], r['audio_s'], r['llm_latency_s'], '|', r['pred'][:100])
+    r = json.loads(l); rows[r['qid']].append(r)
+for qid, rs in rows.items():
+    print('=' * 100)
+    print(f"[{rs[0]['task']}] Q:   {rs[0]['question']}")
+    print(f"        REF: {rs[0]['answer']}")
+    print(f"        FILE: {rs[0]['video_file']}   audio {rs[0]['audio_s']:.1f}s")
+    for r in rs:
+        kept = 'all' if r['cond'] == 'full' else r['kept']
+        print(f"  {r['cond']:<12} kept={str(kept):<20} {r['llm_latency_s']:.2f}s | {r['pred']}")
 ```
-`audio_s` should be about 16 (seconds of audio used). Note the seconds per question: the full run (step 7) has 13 conditions per question instead of 4.
+`audio_s` should be about 16 (seconds of audio used).
 
 ### 7. Full run
 ```bash
@@ -247,7 +295,7 @@ for l in open('/content/drive/MyDrive/OmniEyes/iteration3/omni_smoke.jsonl'):
   --out /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k3.jsonl
 ```
 - `--keep_current --min_keep 4` turn on the frame-selection fixes: every condition sees the question moment, and each method gets at least 4 frames to choose. Every output row records both settings.
-- Roughly 20 s per question on a T4, so about 50 minutes for 150 questions (estimated from the smoke test).
+- About 1–1.5 hours per run on a T4. The gate keeps more frames on busy videos, so the time depends on the questions sampled.
 - If Colab disconnects, repeat steps 1–3 and 5, then re-run this exact command: finished (question, condition) pairs are skipped. Use a new `--out` file whenever you change any option, so rows made with different settings never end up in the same file.
 - Forward questions are left out: their answer happens after the question time, outside the window the model sees (see `reports/Iteration2_Report.md` §5.4).
 - **Video-only ablation** (what audio adds), same questions:
@@ -258,20 +306,27 @@ for l in open('/content/drive/MyDrive/OmniEyes/iteration3/omni_smoke.jsonl'):
   --out /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k3_noaudio.jsonl
 ```
 
-### 8. Grade (a few minutes on a GPU)
+### 8. Grade both runs (a few minutes each on a GPU)
 ```bash
 !python src/semantic_judge.py /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k3.jsonl \
   /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3.jsonl \
   --nli_model MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli
+!python src/semantic_judge.py /content/drive/MyDrive/OmniEyes/iteration3/results_v3_k3_noaudio.jsonl \
+  /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3_noaudio.jsonl \
+  --nli_model MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli
 ```
+Each prints a mean per condition at the end. The `ent_con` column is the one the report uses.
 
-### 9. Analyse
+### 9. Analyse (any machine, no GPU needed)
+Download the Drive `iteration3` folder into `results/iteration3/`, then from the repository root:
 ```bash
-!mkdir -p /content/drive/MyDrive/OmniEyes/iteration3/tables
-!python src/analyze.py /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3.jsonl --task instant backward --errors \
-  --csv /content/drive/MyDrive/OmniEyes/iteration3/tables/instant_backward
+mkdir -p results/iteration3/tables
+python src/analyze.py results/iteration3/judged_v3_k3.jsonl --errors --csv results/iteration3/tables/audio > results/iteration3/tables/audio.txt
+python src/analyze.py results/iteration3/judged_v3_k3_noaudio.jsonl --errors --csv results/iteration3/tables/noaudio > results/iteration3/tables/noaudio.txt
+python src/compare_audio.py results/iteration3/judged_v3_k3.jsonl results/iteration3/judged_v3_k3_noaudio.jsonl \
+  --csv results/iteration3/tables/audio_vs_noaudio.csv > results/iteration3/tables/audio_vs_noaudio.txt
 ```
-How to read the output: `results/iteration2/tables/README.md` and `reports/Iteration2_Report.md` §5. A `*` after a paired difference means its 95% interval excludes 0.
+How to read the output: `results/iteration3/tables/README.md` and `reports/Iteration3_Report.md` §6. A `*` after a paired difference means its 95% interval excludes 0.
 
 ### 10. Validate the grader on fresh labels
 ```bash
@@ -282,7 +337,7 @@ How to read the output: `results/iteration2/tables/README.md` and `reports/Itera
 Never reuse labels from an earlier run: question IDs repeat, but the answers change.
 
 ### 11. Bring the results into the repository
-Copy the Drive folder's files into `results/iteration3/` in your local clone, then commit them.
+Copy the Drive folder's files into `results/iteration3/` in your local clone (step 9 assumes they are there), then commit them.
 
 ### Troubleshooting
 | Symptom | Likely cause and fix |
@@ -315,10 +370,20 @@ K = 8 is the first block after a full-attention layer in Omni's vision encoder (
 
 ---
 
-## Results at a glance (iteration 2, instant + backward, n = 76)
+## Results at a glance (iteration 3, Qwen2.5-Omni-3B, 150 instant + backward questions)
 
-- **Speed:** with the gate, LLM latency falls from 2.17 s to 0.87–1.00 s, and prompt tokens from 2,758 to 356–624.
-- **Accuracy:** no condition differs detectably from `full`. But all conditions score low (about −42 to −47), and the gate, pixel and uniform selectors usually received the same frames. So the run cannot tell the methods apart.
-- **Gate cost:** the gate's measured ViT cost is 2–3× that of uniform or pixel sampling at the same frame count.
+Score = `ent_con` × 100, from −100 (contradicted by the reference) to +100 (supported).
 
-Details, examples and the iteration 3 plan are in `reports/Iteration2_Report.md`.
+| | `full` | `gate@0.88` | `uniform@0.88` | `pixel@0.88` |
+|---|---|---|---|---|
+| Frames sent | 32.5 | 14.0 | 14.0 | 14.0 |
+| Score, with audio | 26.9 | 25.4 | 20.1 | 23.3 |
+| Score, video only | 19.9 | 12.5 | −0.4 | 7.3 |
+| Total time per question (vision + LLM) | 6.46 s | 3.80 s | 3.34 s | 3.34 s |
+| Prompt tokens (with audio) | 3,254 | 1,675 | 1,675 | 1,675 |
+
+- **The video fix:** with each question answered from its own video, scores are positive for the first time. The same model and settings scored −31.9 on the wrong video. Iteration 1–2 accuracy numbers (−28 to −44) are not valid.
+- **Audio:** earlier iterations had none. With audio, gating to ~14 frames costs no significant accuracy against `full` (−1.5). Without audio, pruning loses 7–14 points. Audio adds 10–20 points to every pruned condition.
+- **Cost:** the gate roughly halves prompt tokens and cuts the time per question by ~41% against `full`. But it costs more vision time than uniform or pixel selection, and it beats them by 1.5–5 points, which is not significant.
+
+Details, examples and the iteration 4 plan are in `reports/Iteration3_Report.md`.

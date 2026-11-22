@@ -1,6 +1,6 @@
 # 01 · Move to an Omni model with audio
 
-**Status: steps 1–4 written, not yet run on a GPU.**
+**Status: steps 1–4 done and evaluated in iteration 3 (`reports/Iteration3_Report.md`).**
 - `src/run.py` loads Qwen2.5-Omni-3B (Thinker only) by default.
 - `src/data.py` `read_audio_window()` reads the causal audio with ffmpeg.
 - The audio is passed as its own clip (`use_audio_in_video=False`).

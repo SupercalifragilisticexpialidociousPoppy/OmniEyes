@@ -19,6 +19,8 @@ task = {q: A[(q, 'full')]['task'] for q in qids}
 conds = ['full'] + [f'{m}@{t}' for t in ['0.88', '0.9', '0.93', '0.95'] for m in ['gate', 'uniform', 'pixel']]
 rng = np.random.default_rng(0)
 def ci(d):
+    if len(d) == 0:
+        return "(no questions)"
     d = np.array(d, float); bs = [rng.choice(d, len(d)).mean() for _ in range(2000)]
     lo, hi = np.percentile(bs, [2.5, 97.5]); return f"{d.mean():+6.1f} [{lo:+6.1f}, {hi:+6.1f}]{' *' if lo > 0 or hi < 0 else '  '}"
 s = lambda r: 100 * r['ent_con']
@@ -30,7 +32,7 @@ for c in conds:
     a = [s(A[(q, c)]) - s(N[(q, c)]) for q in qids if has[q]]
     b = [s(A[(q, c)]) - s(N[(q, c)]) for q in qids if not has[q]]
     print(f"{c:<14}{ci(a):>30}{ci(b):>34}")
-    rows.append(dict(condition=c, audio_minus_noaudio_with_track=round(np.mean(a), 2), audio_minus_noaudio_no_track=round(np.mean(b), 2)))
+    rows.append(dict(condition=c, audio_minus_noaudio_with_track=round(np.mean(a), 2), audio_minus_noaudio_no_track=round(np.mean(b), 2) if b else None))
 print("\nidentical answers audio vs no-audio, no-track questions:",
       sum(A[(q, c)]['pred'] == N[(q, c)]['pred'] for q in qids if not has[q] for c in conds), "/", (len(qids) - sum(has.values())) * len(conds))
 print("\n=== 2. Gate minus full, questions WITH an audio track ===")
