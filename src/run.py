@@ -24,7 +24,7 @@ Iteration 3 updates:
     --keep_current always sends the newest frame (the question moment) in every condition;
     --min_keep N tops the gate up to at least N frames, so the baselines get the same budget.
 """
-import argparse, collections, glob, json, os, random, shutil, time
+import argparse, collections, glob, json, os, random, re, shutil, time
 import numpy as np
 import torch
 from transformers import AutoProcessor
@@ -41,6 +41,13 @@ PROMPT = ("You are watching a live phone camera stream. The frames shown end at 
 # speech output, and in the iteration 3 smoke test it made answers hedging and chatty.
 
 
+def _norm_path(p):
+    """Annotation paths omit the '_2fps' suffix that the extracted archive folders carry
+    (e.g. 'task-x_reencoded/' vs 'task-x_reencoded_2fps/'), so drop it from every folder name."""
+    parts = p.replace("\\", "/").strip("/").split("/")
+    return "/".join([re.sub(r"_2fps$", "", q) for q in parts[:-1]] + parts[-1:])
+
+
 def index_videos(root):
     """All .mp4 files under root, as root-relative paths with '/' separators."""
     files = glob.glob(os.path.join(root, "**", "*.mp4"), recursive=True)
@@ -54,16 +61,18 @@ def resolve_video(root, v, index):
     an unrelated video. (Iterations 1-3 did exactly that: every question was answered from
     the same video.) A file only matches if the end of its path equals the end of the
     annotation path, including at least the video's own folder, and exactly one file does.
-    That tolerates a renamed top-level archive folder, but never a different video.
+    Folder names are compared without their '_2fps' suffix (see _norm_path). That tolerates
+    the archives' folder naming, but never a different video.
     """
     v = v.replace("\\", "/").strip("/")
     for cand in (v, os.path.join(root, v)):
         if os.path.isfile(cand):
             return cand
-    parts = v.split("/")
-    for k in range(1, len(parts) - 1):          # drop leading folders, keep >= folder + file
+    parts = _norm_path(v).split("/")
+    norm_index = [(f, _norm_path(f)) for f in index]
+    for k in range(0, len(parts) - 1):          # drop leading folders, keep >= folder + file
         suffix = "/".join(parts[k:])
-        hits = [f for f in index if f == suffix or f.endswith("/" + suffix)]
+        hits = [f for f, nf in norm_index if nf == suffix or nf.endswith("/" + suffix)]
         if len(hits) == 1:
             return os.path.join(root, hits[0])
         if len(hits) > 1:
