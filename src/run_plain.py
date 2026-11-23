@@ -16,7 +16,7 @@ Usage (from the repository root, same options as run.py):
   python src/run_plain.py --ann PhoStream/dataset/phostream_annotations.json --video_root videos \
       --n 150 --tasks instant backward --out results_plain.jsonl
 """
-import argparse, collections, json, os, random, shutil, time
+import argparse, collections, inspect, json, os, random, shutil, time
 import numpy as np
 import torch
 
@@ -25,6 +25,19 @@ from data import load_annotations, read_window, read_audio_window
 from run import PROMPT, index_videos, resolve_video, load_model
 
 AUDIO_TOKENS_PER_S = 25       # Omni's audio encoder: about 25 tokens per second of audio
+
+
+def _accepts(proc, name):
+    """True if any __call__ in the processor's class hierarchy has a parameter called name."""
+    for cls in type(proc).__mro__:
+        fn = cls.__dict__.get("__call__")
+        if fn is not None:
+            try:
+                if name in inspect.signature(fn).parameters:
+                    return True
+            except (TypeError, ValueError):
+                pass
+    return False
 
 
 def check_interleaved(proc, ids, max_audio_tokens):
@@ -67,7 +80,12 @@ def answer_plain(model, proc, frames, question, timestamps, audio, max_audio_tok
                   "pad_token_id": tok.pad_token_id if tok.pad_token_id is not None else stop_ids[0]}
     proc_kwargs = {"use_audio_in_video": has_audio}
     if has_audio:
-        proc_kwargs["audio"] = [audio]    # one audio per video: the processor uses this array as given
+        proc_kwargs["audio"] = [audio]
+        # Newer transformers (OmniModalProcessorMixin): say that this audio belongs to videos[0].
+        # With one audio per slot, the processor uses our causal clip as given and never reads the
+        # file. Older versions don't know the argument and pair one audio with one video themselves.
+        if _accepts(proc, "audio_from_video_indices"):
+            proc_kwargs["audio_from_video_indices"] = [0]
     inp = proc(text=[text], videos=[vid], return_tensors="pt", padding=True, **proc_kwargs)
     n_audio_tok = check_interleaved(proc, inp.input_ids[0], max_audio_tokens) if has_audio else 0
     inp = inp.to(model.device).to(model.dtype)
