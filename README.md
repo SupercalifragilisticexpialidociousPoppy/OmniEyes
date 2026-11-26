@@ -36,6 +36,8 @@ OmniEyes/
 │   ├── semantic_judge.py         local NLI grader (used for all reported scores)
 │   ├── analyze.py                tables, paired confidence intervals, error lists, CSV export
 │   ├── compare_audio.py          compares an audio run with its --no_audio twin
+│   ├── validate_grader.py        grader-vs-hand-label agreement (ρ with CI, AUC, per task); no GPU
+│   ├── run_plain.py              plain-Omni baseline: all frames, audio interleaved into the video
 │   ├── judge.py                  LLM-as-judge over an API (kept for reference, not used)
 │   └── test_gate_cpu.py          CPU smoke test of gate.py on a tiny random model
 ├── reports/
@@ -62,6 +64,7 @@ OmniEyes/
 │   │   ├── results_v3_k3.jsonl   model answers with audio, 150 questions × 13 conditions
 │   │   ├── results_v3_k3_noaudio.jsonl  the same questions, video only (--no_audio)
 │   │   ├── judged_v3_k3*.jsonl   the same rows, NLI-graded (large model)
+│   │   ├── labels_v3.csv         60 hand labels on the audio run, for validating the grader
 │   │   └── tables/               output of analyze.py and compare_audio.py (see tables/README.md)
 │   └── iteration3-scrapped/      first iteration 3 run, made with the video bug (kept for the record; invalid)
 └── archive/                      superseded one-off files, kept for the record
@@ -172,6 +175,12 @@ Takes a graded audio run and its `--no_audio` twin (same questions and settings)
 - mean latency and tokens.
 
 `--csv` saves the per-condition table.
+
+### `src/validate_grader.py`: how far to trust the grader
+`python src/validate_grader.py <judged.jsonl> <labels.csv>` compares the grader with hand labels from `semantic_judge.py --sample`. For two grades, `ent_con` and `1 − p_con` (penalise only contradiction), it prints Spearman's ρ with a bootstrap 95% CI, the AUC (how often a right answer grades above a wrong one), and the median grade per label, overall and per question type. It reads only the graded file, so it needs no GPU and no model.
+
+### `src/run_plain.py`: plain-Omni baseline
+Same questions, window, frames and prompt as `run.py`, with no gating. The difference is the packing: the audio clip is interleaved into the video in 2 s chunks (`use_audio_in_video=True`), as in Qwen2.5-Omni's own examples, instead of following the video as a separate clip. Rows have `cond = "plain"`. The script stops if the audio was not interleaved, or has more tokens than the 16 s clip allows.
 
 ### `src/judge.py`: LLM judge (not used for results)
 Grades answers 0–100 with any OpenAI-compatible chat API (`JUDGE_BASE_URL`, `JUDGE_API_KEY`, `JUDGE_MODEL`). It rate-limits requests (`--rps`) and marks unparseable replies as `-1`. It was replaced by `semantic_judge.py` after the iteration 1 failure and API rate limits. If you use it: `JUDGE_MODEL` must be a chat model, not a speech model such as `whisper-*`. Keep keys in Colab's Secrets panel, never in the notebook.
@@ -332,8 +341,14 @@ How to read the output: `results/iteration3/tables/README.md` and `reports/Itera
 ```bash
 !python src/semantic_judge.py /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3.jsonl --sample 60 /content/drive/MyDrive/OmniEyes/iteration3/labels_v3.csv
 # open labels_v3.csv from Drive, fill the "human" column with 0 / 1 / 2 (wrong / partial / correct), then:
-!python src/semantic_judge.py /content/drive/MyDrive/OmniEyes/iteration3/judged_v3_k3.jsonl --validate /content/drive/MyDrive/OmniEyes/iteration3/labels_v3.csv
 ```
+Then, on any machine, with the files in `results/iteration3/`:
+```bash
+python src/validate_grader.py results/iteration3/judged_v3_k3.jsonl results/iteration3/labels_v3.csv > results/iteration3/tables/grader_validation.txt
+python src/analyze.py results/iteration3/judged_v3_k3.jsonl --metric p_con --csv results/iteration3/tables/audio_pcon > results/iteration3/tables/audio_pcon.txt
+python src/analyze.py results/iteration3/judged_v3_k3_noaudio.jsonl --metric p_con --csv results/iteration3/tables/noaudio_pcon > results/iteration3/tables/noaudio_pcon.txt
+```
+The last two repeat the analysis with the stricter grade `p_con` (lower is better) as a robustness check. `semantic_judge.py --validate` prints the plain ρ per column, if you prefer it.
 Never reuse labels from an earlier run: question IDs repeat, but the answers change.
 
 ### 11. Bring the results into the repository
@@ -385,5 +400,6 @@ Score = `ent_con` × 100, from −100 (contradicted by the reference) to +100 (s
 - **The video fix:** with each question answered from its own video, scores are positive for the first time. The same model and settings scored −31.9 on the wrong video. Iteration 1–2 accuracy numbers (−28 to −44) are not valid.
 - **Audio:** earlier iterations had none. With audio, gating to ~14 frames costs no significant accuracy against `full` (−1.5). Without audio, pruning loses 7–14 points. Audio adds 10–20 points to every pruned condition.
 - **Cost:** the gate roughly halves prompt tokens and cuts the time per question by ~41% against `full`. But it costs more vision time than uniform or pixel selection, and it beats them by 1.5–5 points, which is not significant.
+- **Grader:** on 60 hand-labelled Omni answers, the grade agrees moderately with humans (ρ = 0.40, AUC 0.83). A stricter grade (`1 − p_con`, ρ = 0.70) gives the same conclusions.
 
 Details, examples and the iteration 4 plan are in `reports/Iteration3_Report.md`.

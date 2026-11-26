@@ -11,6 +11,7 @@ Main findings, on 150 instant + backward questions:
 - **The fix changed everything.** With the same model and settings, the `full` score went from −31.9 (wrong videos) to **+26.9** (correct videos). Scores are now positive for the first time. The negative scores in iterations 1–2 mostly reflect the bug, not the model or the gate.
 - **Audio is the biggest lever for pruned inputs.** Earlier iterations had no audio at all. Adding it raises every pruned condition by +7 to +20 points. 11 of the 12 gains are significant. Without audio, every gate setting loses 7–14 points against `full`. With audio, the loss shrinks to 1.5–4.6 points and is not significant.
 - **The gate is cheaper than `full`, but not more accurate than simpler selectors.** At τ = 0.88, the gate sends 14 of ~33 frames. That halves prompt tokens (3,254 → 1,675) and cuts LLM time by 40% (3.37 s → 2.01 s), with no significant accuracy loss when audio is on. The gate scores above uniform and pixel selection at every τ, but only one of 24 comparisons is significant. And the gate costs more vision-encoder time than either.
+- **The grader is validated on Omni's answers** (60 hand labels, §6.6). It agrees moderately with humans: ρ = 0.40, and it ranks a right answer above a wrong one 83% of the time. The conclusions above also hold under a second, stricter grade that agrees with the labels better (ρ = 0.70).
 
 ---
 
@@ -25,7 +26,8 @@ Main findings, on 150 instant + backward questions:
 | 5 | Forward questions can't be answered from the window, and the grader is near chance on them | Forward questions dropped from the runs | Done |
 | 6 | Omni's answers ran on, inventing new "Human:" turns, or hedged ("I'm not sure…") | Explicit stop tokens; no system prompt; the prompt asks for direct, concise answers "based only on what you have seen and heard" | Done |
 | 7 | **Every question used the same video** (found during iteration 3, §3) | `resolve_video()` matches the full folder path, never guesses, and logs `video_file` in every row | Done |
-| — | τ chosen by calibration, top-k similarity, timestamp ablation, K ablation, larger sample, fresh grader labels | — | Not done (§8) |
+| 8 | The grader was validated only on Qwen2-VL answers | 60 fresh hand labels on Omni's answers (`results/iteration3/labels_v3.csv`), analysed with `src/validate_grader.py` | Done (§6.6) |
+| — | τ chosen by calibration, top-k similarity, timestamp ablation, K ablation, larger sample | — | Not done (§9) |
 
 ---
 
@@ -91,7 +93,7 @@ For each question asked at video time $t$:
 - **Data:** PhoStream, all four video archives. 150 questions (seed 0): 101 instant and 49 backward, from youtube_dl (81), phone_class (40), record_file (16) and EgoBlind (13).
 - **Runs:** the same 150 questions and settings twice, with audio and with `--no_audio` (1,950 answers each).
 - **Hardware:** Colab T4, fp16. Notebook: `results/iteration3/Task4_Ite3.ipynb`.
-- **Grader:** `ent_con` from DeBERTa-v3-large NLI (`MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli`), as in iteration 2. It has **not** been re-validated on Omni's answers. The iteration 2 estimate for instant + backward questions is ρ = 0.47, AUC = 0.86.
+- **Grader:** `ent_con` from DeBERTa-v3-large NLI (`MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli`), as in iteration 2. Re-validated on 60 hand-labelled Omni answers (§6.6): ρ = 0.40, AUC = 0.83.
 - **Statistics:** paired bootstrap (2,000 resamples, 95% CI) over the same questions. `*` means the interval excludes 0.
 
 ---
@@ -195,12 +197,35 @@ Uniform scores −0.4 to 11.1 and pixel 7.3 to 13.0, across the τ values. Frame
 - **Against the baselines, the gate costs more:** every frame pays the block-1..3 pass (14.8 ms), even frames that are dropped. If kept frames resumed from block 3 instead of being re-encoded, the gate's vision cost would fall from 58% to 53% of `full`. That is still above uniform and pixel (43%).
 - Selection is adaptive: at τ = 0.88, the gate kept the minimum of 4 frames on 49 questions (mostly static screens) and all frames on 7 (fast camera motion). Uniform and pixel only received these counts because the gate chose them first.
 
+### 6.6 Grader validation on Omni's answers (`tables/grader_validation.txt`)
+We hand-labelled 60 randomly sampled rows of the audio run as 0 / 1 / 2 (wrong / partial / correct): 16 wrong, 17 partial, 27 correct, from 48 different questions, across all conditions (21 gate, 17 pixel, 17 uniform, 5 full).
+
+| Grade | Questions | Spearman ρ [95% CI] | AUC* |
+|---|---|---|---|
+| `ent_con` (used in §6.1–6.5) | all (60) | **0.40** [0.15, 0.61] | **0.83** |
+| | instant (36) | 0.25 [−0.07, 0.54] | 0.68 |
+| | backward (24) | 0.62 [0.27, 0.82] | 0.94 |
+| `1 − p_con` ("not contradicted") | all (60) | **0.70** [0.53, 0.82] | **0.93** |
+| | instant (36) | 0.47 [0.18, 0.70] | 0.87 |
+| | backward (24) | 0.88 [0.75, 0.94] | 0.99 |
+
+*AUC: the probability that the grade ranks an answer humans judged right (label 1 or 2) above one judged wrong (label 0). 0.5 = chance, 1.0 = perfect.
+
+- **`ent_con` is usable, but it mostly separates wrong from not-wrong.** Answers labelled wrong have a median grade of −69. But answers labelled *correct* have a median of only +2, below those labelled partial (+89). Omni's correct answers are short ("Screen recording"), and the reference is a long description, so the NLI model often finds the answer "not implied" (neutral) rather than "implied". `ent_con` therefore ranks correct and partial answers poorly (AUC 0.65 for correct vs. the rest).
+- **It is weakest on instant questions** (ρ = 0.25, not significant). Wrong instant answers are often vague rather than contradicted (median grade +2), so the grader can't tell them from right ones. In iteration 2 the pattern was the reverse (instant 0.57, backward 0.31). With 24–36 rows per type, neither split is reliable.
+- **`1 − p_con` agrees much better on these labels.** It ignores whether the reference *implies* the answer and only penalises contradiction. But we picked it after seeing these labels, and on the iteration 2 labels it did no better than `ent_con` (ρ = 0.35 vs. 0.34; those answers were mostly wrong, since they came from the wrong videos). So we keep `ent_con` as the main grade and use `1 − p_con` as a robustness check.
+- **Robustness check:** rerunning §6.1–6.3 with `p_con` (`tables/*_pcon*`) gives the same conclusions.
+  - With audio, no gate setting differs significantly from `full`, uniform or pixel. The gate has the lowest contradiction rate of the three selectors at every τ (20.4–21.2% vs. 20.9–22.0% for pixel and 22.4–22.8% for uniform). `full` is lowest overall (18.0%).
+  - Without audio, the gate contradicts the reference significantly more often than `full` at τ = 0.90, 0.93 and 0.95 (+4 to +8 points). At τ = 0.88 it contradicts significantly *less* often than uniform (−8.6) and pixel (−4.9).
+  - Audio lowers the contradiction rate in every condition (e.g. `full` 22.6% → 18.0%, `uniform@0.88` 33.7% → 22.6%).
+- **Limitations:** one labeller, 60 rows, with several questions appearing under more than one condition.
+
 ---
 
 ## 7. Hypothesis check
 
 - **Compute savings: supported against `full`.** The gate cuts prompt tokens by 29–49%, LLM time by 24–40% and total time per question by about 41% (τ = 0.88). It is still more expensive than uniform or pixel selection at the same frame count.
-- **Accuracy retention: supported with audio, not without.** With audio, no gate setting is significantly worse than `full`. The worst estimate is −4.6, with intervals reaching −10 to −12. Without audio, 3 of 4 settings lose significantly (−8 to −14). This is not a proof of equivalence: the intervals are wide and the grader is noisy.
+- **Accuracy retention: supported with audio, not without.** With audio, no gate setting is significantly worse than `full`. The worst estimate is −4.6, with intervals reaching −10 to −12. Without audio, 3 of 4 settings lose significantly (−8 to −14). This is not a proof of equivalence: the intervals are wide, and the grader agrees only moderately with humans (ρ = 0.40, §6.6). The same holds under the stricter `1 − p_con` grade.
 - **Gate better than cheap selection: suggestive, not shown.** With audio, the gate is ahead of uniform and pixel in all 8 comparisons, by +1.5 to +5.3 points, but none is significant. Unlike iteration 2, the methods now receive different frames: gate and uniform picked identical frames in only 9–42 of 150 questions. On 88–107 of 150 questions, however, gate, uniform and pixel still produce word-for-word identical answers. Frame choice only matters on a minority of questions, which limits the power of the comparison.
 - **Summary:** the gate is a cheaper way to run the Omni model, at a small accuracy cost that is not significant with audio. It is not yet shown to be better than simpler selectors.
 
@@ -208,8 +233,8 @@ Uniform scores −0.4 to 11.1 and pixel 7.3 to 13.0, across the τ values. Frame
 
 ## 8. Drawbacks and limitations
 
-### Drawback 1: The grader is not validated on Omni's answers
-The NLI grader was validated on Qwen2-VL answers (ρ = 0.47 on instant + backward). Omni's answers are shorter and more direct, and the grader's known biases still apply. A vague wrong answer scores about 0 and a specific wrong one about −100.
+### Drawback 1: The grader agrees only moderately with humans
+On 60 hand-labelled Omni answers, `ent_con` reaches ρ = 0.40 (AUC 0.83), and only 0.25 on instant questions (§6.6). It separates wrong answers from the rest, but it gives short correct answers neutral grades. Its known biases still apply: a vague wrong answer scores about 0, and a specific wrong one about −100.
 - *Question:* "What flavor name is printed on the label?" (reference: "Vanilla Cupcake").
 - `full`: "Vanilla" (+99). `uniform@0.88`: "vanilla" (−99). Nearly the same answer, opposite grades.
 - `gate@0.88`: "date" (−100), a genuine error.
@@ -231,7 +256,7 @@ Pruned conditions lose up to 12 points on backward questions (§6.4), against at
 
 ## 9. Plan for iteration 4
 
-1. **Validate the grader on Omni's answers.** Label ~100 rows, one condition per question, balanced across instant and backward, with two labellers. Without this, differences of a few points cannot be trusted.
+1. **A better grader.** Confirm `1 − p_con` on a fresh set of labels it wasn't chosen on (~100 rows, one condition per question, two labellers). Or grade short answers against a short key fact extracted from each reference, so correct short answers stop scoring neutral.
 2. **More questions.** 300–500 instant + backward questions would halve the intervals. The full dataset has 2,761 eligible questions.
 3. **Gate–baseline separation.** Top-k token similarity, so small local changes such as on-screen text count. And audio-triggered keeps: keep the nearest frame when speech starts or a loud event happens (`plans/01_omni_migration.md`, item 6).
 4. **Lower the gate's fixed cost.** K = 1 ablation, gating at low resolution (`plans/03_resolution.md`), and feeding resumed block-K features into generation.
