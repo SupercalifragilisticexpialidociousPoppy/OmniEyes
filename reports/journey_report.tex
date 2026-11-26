@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\setlist{itemsep=1pt,topsep=3pt}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+
+\title{\vspace{-1.2cm}From Full-Duplex Omni Models to OmniEyes:\\ A Report on Our Research Journey}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Name} & \textbf{ID} \\
+\midrule
+Mohammad Zaid Agha & 2024ADPS0840G \\
+Soumitra Ashish Kulkarni & 2024A8PS0654G \\
+Shiva P & 2024A7PS0563G \\
+Kavya Paras Shah & 2024A7PS0822G \\
+Aryan Rao & 2024A3PS0686G \\
+\bottomrule
+\end{tabular}
+\end{table}
+\vspace{-0.8cm}
+
+\section*{Overview}
+Over five assignments we went from a broad interest in full-duplex omni models (systems that listen, see and speak at the same time) to one narrow, testable question: can the first few layers of a vision transformer decide which video frames a streaming omni model actually needs? The final result, \emph{OmniEyes}, is a training-free frame gate evaluated with Qwen2.5-Omni-3B on the PhoStream benchmark. This report summarises what we did in each task, what we observed, and how each step changed the next. The technical details are in the accompanying paper and in our iteration reports.
+\newline
+\href{https://github.com/SupercalifragilisticexpialidociousPoppy/OmniEyes}{Link to our GitHub repository.}
+
+\section*{Task 1: Proposal}
+We started from the Mini-Omni line of work (Mini-Omni, Mini-Omni2, Mini-Omni-Reasoner), which showed that a small open model could hear, talk and reason in a streaming fashion, and then found DuplexOmni, which splits interaction and deep reasoning into two asynchronous layers. The full-duplex idea was exciting, and we chose DuplexOmni as our base paper largely on that basis.
+
+Our proposal combined Mini-Omni-Reasoner's silent reasoning with Mini-Omni2's vision, but replaced continuous full-duplex listening with push-to-talk and a separate computer-vision module that extracts text or asks the user to point at an object.
+
+\textbf{Observation.} The proposal was driven by enthusiasm rather than by a close reading of the papers. It touched reasoning, vision, audio, interaction design and edge deployment at once, and we had not yet established which of these actually had an open problem we could test.
+
+\section*{Task 2: Literature Review}
+We implemented the SurveyGen pipeline to generate the review automatically. We extracted the topic from our four base papers, retrieved 358 candidate papers from arXiv (25 topic-expanded queries plus co-citation expansion over the seed bibliographies), ranked them by LLM-judged relevance and diversity, and generated a six-section, 4{,}910-word review over 21 references. Evaluated against DuplexOmni's own related-work section, the pipeline recovered 6 of 21 references (citation F1 0.286, against 0.190 for plain similarity retrieval) and produced no hallucinated citations.
+
+\textbf{Observation.} The pipeline worked as a piece of engineering, but the review itself did not help us much: none of us had read the underlying papers, so we could not judge or use what it said. A generated review is only as useful as the reader's ability to check it.
+
+\section*{Task 3: Research Gap Analysis}
+We therefore split this task into two phases. In the first, we divided the 21 references into six themes, one per member (omni foundation models; speech generation and efficiency; full-duplex turn-taking; reasoning under real-time constraints; vision and multimodal interaction; efficient and edge deployment), and actually read them. This took about ten days, much longer than planned. In the second phase we produced a research-gap analysis of DuplexOmni with every finding tagged as acknowledged by the authors, implicit in the paper, supported by other literature, or open, and verified it by hand as our instructor suggested.
+
+\textbf{Observations.}
+\begin{itemize}
+\item Reading the papers ourselves changed what we saw. The clearest gap was in vision: DuplexOmni processes one frame every 480\,ms for the whole session, with control tokens for when to think and speak but none for when to \emph{look}, and reports no visual ablation or compute figure. Across the literature, efficiency work targeted audio, parameters or retrieval, but never the visual stream.
+\item Improving DuplexOmni as a whole was too broad for our resources. We narrowed the project to the vision component: how visual information is acquired and selected during real-time interaction.
+\end{itemize}
+
+\section*{Task 4: Ideation}
+We built an evidence ledger of the papers relevant to the vision gap (PhoStream, FastV, IVTP, PruneVid, VideoChat-Online, ELLSA, VITA-E), recording for each how and when it acquires, encodes, keeps or discards visual information. We then used an LLM to generate candidate research ideas from the ledger and ranked them. Two finalists were developed in full: \emph{early-layer variance gating} (H18) and \emph{rigid acquisition with active clarification} (H16).
+
+\textbf{Observations.} The ledger showed that all existing pruning and memory methods decide \emph{after} a frame has been fully encoded, and mostly offline, so deciding before deep encoding was a genuinely open slot. We chose H18 because it needs no training (H16 required fine-tuning and a simulated-user harness), can run on a single Colab T4, and comes with clear falsification conditions: the gate fails if its own overhead cancels the savings, or if it does no better than blindly sampling fewer frames. Writing those conditions down early turned out to matter, because they are exactly what we ended up measuring.
+
+\section*{Task 5: Codification (three iterations)}
+Table~\ref{tab:iters} summarises the three iterations.
+
+\begin{table}[h]
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{@{}p{1.6cm}XX@{}}
+\toprule
+ & What we built or changed & What we observed \\
+\midrule
+Iteration 1 &
+Turned the idea into something runnable: Qwen2-VL-2B on a T4, a 16\,s causal window at 2\,Hz, a forward hook that stops the vision encoder after block 3, and two baselines at the same frame budget (uniform and pixel-difference). Replaced the LLM judge, which had scored every answer 0, with a local NLI grader validated against 60 hand labels. &
+Large savings in frames, prompt tokens and latency; differences in accuracy were within noise. The grader agreed reasonably with humans, but that figure was optimistic, because we chose the metric on the same labels. \\
+\midrule
+Iteration 2 &
+Timestamps in the prompt; a wider $\tau$ sweep; forward questions; timing for resuming kept frames from block 3; resumable runs; error analysis; re-validation of the grader on fresh labels. &
+The gate often kept only the \emph{oldest} frame, so the model never saw the moment being asked about; gate, uniform and pixel picked identical frames, so the comparison could not separate them. Scores were low and flat everywhere, and the resume timing turned out to be a placeholder. \\
+\midrule
+Iteration 3 &
+Moved to Qwen2.5-Omni-3B with the causal audio of the same window; always keep the newest frame and at least 4 frames; real timing of the gate's overhead. While analysing the first run we found that \emph{every question had been answered from the same video} (all files share one name); we fixed the loader and re-ran everything, with and without audio. &
+With correct videos, scores became positive for the first time. With audio, the gate sends 43\% of the frames, halves the prompt and cuts time per question by 41\% with no significant accuracy loss; without audio, pruning costs 7--14 points. The gate is \emph{not} significantly better than uniform or pixel sampling, and its fixed per-frame cost makes it more expensive than they are in the vision encoder. \\
+\bottomrule
+\end{tabularx}
+\caption{The three codification iterations.}
+\label{tab:iters}
+\end{table}
+
+\textbf{How each iteration improved on the last.} Iteration 1 replaced an evaluation that did not work (an API judge with token limits and rate limits) with one we could run and check. Iteration 2 measured more carefully, and that care is what exposed the two weaknesses of the design: the gate looked backwards instead of at the present moment, and the baselines collapsed onto the same frames. Iteration 3 fixed both, moved to the omni setting the project was always about, and, by asking why different videos received identical frame selections, uncovered the data error that had made the earlier accuracy numbers meaningless. We left the iteration 1 and 2 reports as submitted and documented the error and its effect in the iteration 3 report and the paper.
+
+\section*{What we learned}
+\begin{itemize}
+\item \textbf{Read before generating.} LLM-generated reviews and ideas were useful only after we had read the papers ourselves; the ten days of reading in Task 3 shaped every later decision.
+\item \textbf{Narrow scope wins.} Moving from ``improve DuplexOmni'' to ``decide which frames to encode'' made the problem testable on the hardware we had.
+\item \textbf{Matched baselines are the real test.} Against sending all frames, the gate looks good; against sampling the same number of frames uniformly, it does not clearly win. Without the matched baselines we would have reported a misleading success.
+\item \textbf{Validate the pipeline, not just the model.} Two of our biggest corrections were in evaluation and data handling, not in the method: a judge that scored everything 0, and a loader that silently used one video for every question. Logging which input each answer came from, and validating the grader against hand labels, are now part of how we work.
+\item \textbf{A clear negative result is still a result.} The gate is a cheaper way to run an omni model, and audio makes pruning safe, but early-layer variance is not a better frame selector than simple sampling in our measurements. Our proposal's own falsification conditions told us how to recognise that.
+\end{itemize}
+
+\end{document}
